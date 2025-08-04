@@ -4,7 +4,7 @@ A full-stack TypeScript application that automatically scrapes, parses, and comp
 
 ## Features
 
-- 🏢 Pre-configured companies (Adyen, Heineken, ASML)
+- 🏢 Pre-configured companies (Novo Nordisk, Stellantis, Sanofi)
 - 🤖 AI-powered PDF classification and data normalization using OpenAI GPT-4
 - 📊 Automated extraction of Income Statement, Balance Sheet, and Cash Flow
 - 📈 10-year consolidated financial data views
