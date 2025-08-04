@@ -1,149 +1,153 @@
-AI Equity Annual Report Compiler
-Overview
-AI Equity Annual Report Compiler is a Node.js + TypeScript application that automatically scrapes, downloads, and processes annual financial reports (PDFs) from public European companies’ Investor Relations (IR) pages.
+# AI Equity Annual Report Compiler
 
-The goal:
+A full-stack TypeScript application that automatically scrapes, parses, and compiles companies' annual reports into clean, consolidated financial statements.
 
-Scrape annual reports for the last 10 years (starting at 2024) from the company’s IR site.
+## Features
 
-Download PDFs (only true Annual Reports, IFRS/GAAP format, excluding sustainability/tax reports).
+- 🏢 Pre-configured companies (Adyen, Heineken, ASML)
+- 🤖 AI-powered PDF classification and data normalization using OpenAI GPT-4
+- 📊 Automated extraction of Income Statement, Balance Sheet, and Cash Flow
+- 📈 10-year consolidated financial data views
+- 🎨 Modern UI with Mantine components and dark mode
+- 📱 Responsive design for all devices
+- 📥 Export capabilities (CSV/Excel)
 
-Parse the reports into structured financial statements:
+## Tech Stack
 
-Income Statement
+### Frontend
 
-Balance Sheet
+- React 18 + TypeScript
+- Vite (build tool)
+- Mantine UI (component library)
+- React Query (data fetching)
+- Recharts (data visualization)
 
-Cash Flow Statement
+### Backend
 
-Normalize the extracted data into a clean 10-year view for each statement.
+- Express.js + TypeScript
+- Puppeteer (web scraping)
+- pdf-parse (PDF extraction)
+- OpenAI API (AI classification)
+- Multer (file handling)
 
-Output the data in JSON or CSV format for easy consumption.
+## Project Structure
 
-Features
-Scrapes Investor Relations pages dynamically using Puppeteer (with Cheerio fallback for static sites).
+```
+equity-report-ai/
+├── frontend/           # React + Vite frontend
+│   ├── src/
+│   │   ├── components/ # Reusable UI components
+│   │   ├── pages/      # Page components
+│   │   ├── hooks/      # Custom React hooks
+│   │   ├── types/      # TypeScript interfaces
+│   │   └── utils/      # Utility functions
+├── backend/            # Express.js backend
+│   ├── src/
+│   │   ├── routes/     # API route handlers
+│   │   ├── services/   # Business logic
+│   │   ├── utils/      # Helper functions
+│   │   └── types/      # TypeScript interfaces
+└── shared/             # Shared types and utilities
+```
 
-Handles dynamic JavaScript-rendered pages like ASML.
+## Quick Start
 
-Filters out irrelevant PDFs:
+### Prerequisites
 
-✅ Annual Reports, Integrated Reports
+- Node.js 18+ and npm
+- OpenAI API key
 
-❌ Sustainability, ESG, Tax, Interim, Presentations
+### 1. Environment Setup
 
-Deduplicates links before download.
+Create `.env` files:
 
-Downloads reports into:
+**Backend (.env):**
 
-bash
-/annual_reports/[company-domain]/
-Uses OpenAI API (or Claude later) for parsing PDFs into structured financial data.
+```env
+PORT=3001
+```
 
-Tech Stack
-Backend: Node.js, Express, TypeScript
+**Frontend (.env):**
 
-Scraping: Puppeteer + Cheerio
+```env
+VITE_API_URL=http://localhost:3001
+```
 
-Parsing PDFs: pdf-parse / pdfplumber + OpenAI GPT-4 for text interpretation
+### 2. Installation
 
-Frontend (planned): React + Vite + Mantine UI
-
-AI Models: OpenAI GPT-4 / Claude for financial table extraction & normalization
-
-Architecture
-yaml
-backend/
-├── annual_reports/ # Saved reports organized by company
-│ └── www_asml_com/
-│ ├── 2024-Annual-Report-IFRS.pdf
-│ ├── 2024-Annual-Report-GAAP.pdf
-│ └── ...
-├── src/
-│ ├── routes/
-│ │ └── download.ts # Express route for scraping + downloading reports
-│ ├── services/
-│ │ ├── scraper.ts # Scrapes IR page, finds annual report links
-│ │ ├── downloader.ts # Downloads and saves reports with clean names
-│ │ └── normalizer.ts # (Planned) Normalize extracted data
-│ └── index.ts # Express app entry
-└── .env # API keys, configs
-API Design
-POST /api/download/annual_report
-Download annual reports for a given company.
-
-Request:
-
-json
-{
-"ir_url": "https://www.asml.com/en/investors/annual-report"
-}
-Response:
-
-json
-{
-"count": 10,
-"files": [
-"annual_reports/www_asml_com/2023-ASML-Annual-Report-IFRS.pdf",
-"annual_reports/www_asml_com/2023-ASML-Annual-Report-GAAP.pdf"
-],
-"years": [2023, 2022, 2021, ...]
-}
-
-Workflow
-Scrape IR page for yearly links.
-
-Extract PDF URLs (filter only annual/integrated reports).
-
-Download PDFs with clean, normalized filenames.
-
-Extract financial tables (Income, Balance Sheet, Cash Flow).
-
-Normalize & Deduplicate rows based on latest filings.
-
-Output structured JSON or CSV.
-
-Usage
-Install dependencies:
-bash
+```bash
+# Install root dependencies
 npm install
-Run development server:
-bash
+
+# Install backend dependencies
+cd backend && npm install
+
+# Install frontend dependencies
+cd ../frontend && npm install
+```
+
+### 3. Development
+
+```bash
+# Run both frontend and backend concurrently
 npm run dev
-Test API:
-bash
-curl -X POST http://localhost:5050/api/download/annual_report \
- -H "Content-Type: application/json" \
- -d '{"ir_url": "https://www.asml.com/en/investors/annual-report"}'
-Future Enhancements
-AI Parsing Phase:
 
-Use OpenAI GPT-4 to extract tables from PDFs.
+# Or run individually:
+npm run dev:backend  # Backend on http://localhost:3001
+npm run dev:frontend # Frontend on http://localhost:5173
+```
 
-Normalize item names across years.
+### 4. Production Build
 
-Handle multi-currency conversion.
+```bash
+npm run build
+```
 
-Web UI:
+## API Endpoints
 
-Upload custom PDFs.
+- `GET /api/companies` - Get list of supported companies
+- `POST /api/scrape` - Scrape annual reports from company IR website
+- `POST /api/parse` - Parse financial statements from PDFs
+- `POST /api/aggregate` - Generate consolidated 10-year financial tables
 
-Visualize 10-year financial trends.
+## Usage
 
-Database Integration (optional):
+1. **Select Company**: Choose from pre-configured companies
+2. **Scrape Reports**: Automatically download annual reports from IR websites
+3. **Parse Data**: AI extracts and classifies financial statement sections
+4. **View Results**: Browse consolidated 10-year financial statements
+5. **Export Data**: Download results as CSV or Excel files
 
-Store normalized data in PostgreSQL or Supabase.
+## Deployment
 
-Key Goals for Copilot / AI Assistants
-Generate TypeScript code for Express routes, Puppeteer scraping, and PDF parsing.
+### Frontend (Cloudflare)
 
-Ensure scraping logic:
+```bash
+cd frontend
+npm run build
+# Deploy to Cloudflare
+```
 
-✅ Handles dynamic JS rendering.
+### Backend (Render)
 
-✅ Downloads only correct PDFs (Annual, IFRS/GAAP).
+```bash
+cd backend
+npm run build
+# Deploy to Render with environment variables
+```
 
-✅ Deduplicates and names files consistently.
+## Contributing
 
-Implement AI-driven normalization for financial tables.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-Maintain modular and scalable code structure.
+## License
+
+MIT License - see LICENSE file for details
+
+## Support
+
+For issues and questions, please open a GitHub issue.
