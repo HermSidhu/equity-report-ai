@@ -2,9 +2,8 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import downloadRouter from "./routes/download";
-
 dotenv.config();
+import downloadRouter from "./routes/download";
 
 const app = express();
 const PORT = process.env.PORT || 5050;
