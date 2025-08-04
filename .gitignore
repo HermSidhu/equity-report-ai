@@ -10,10 +10,10 @@ node_modules/
 .env.test
 .env.production
 .env.staging
-*.env
 
-# Downloaded annual reports
-annual_reports/
+# Downloaded annual reports - exclude all contents but keep the directory structure
+backend/annual_reports/*/
+!backend/annual_reports/.gitkeep
 
 # Logs
 npm-debug.log*
