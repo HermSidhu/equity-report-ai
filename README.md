@@ -25,10 +25,34 @@ A full-stack TypeScript application that automatically scrapes, parses, and comp
 ### Backend
 
 - Express.js + TypeScript
-- Puppeteer (web scraping)
-- pdf-parse (PDF extraction)
-- OpenAI API (AI classification)
-- Multer (file handling)
+- pdf-parse (PDF text extraction)
+- OpenAI GPT-4o-mini (AI-powered financial data extraction)
+- File system management for data pipeline
+
+## Financial Parser
+
+The backend includes an AI-powered financial statement parser that:
+
+- **Extracts** text from annual report PDFs
+- **Analyzes** financial statements using OpenAI GPT-4o-mini
+- **Normalizes** data into structured JSON (Income Statement, Balance Sheet, Cash Flow)
+- **Processes** multiple years and handles data deduplication
+
+### API Endpoints
+
+- `POST /api/parse` - Parse financial statements for a company
+- `GET /api/parse/status` - Check parsing status
+- `GET /api/parse/companies` - List available companies
+
+### Data Pipeline
+
+```
+annual_reports/[company]/     # Raw PDF files
+    ↓
+parsed_data/[company]/        # Individual year JSON files
+    ↓
+compiled_data/[company].json  # Consolidated multi-year data
+```
 
 ## Project Structure
 

@@ -1,0 +1,26 @@
+{
+  "income_statement": {
+    "Revenue": "122,021",
+    "Cost of Sales": "0",
+    "Gross Profit": "0",
+    "Operating Expenses": "0",
+    "Operating Income": "52,483",
+    "Net Income": "38,951"
+  },
+  "balance_sheet": {
+    "Total Assets": "125,612",
+    "Current Assets": "0",
+    "Non-current Assets": "0",
+    "Total Liabilities": "0",
+    "Current Liabilities": "0",
+    "Non-current Liabilities": "0",
+    "Total Equity": "57,593"
+  },
+  "cash_flow": {
+    "Operating Cash Flow": "0",
+    "Investing Cash Flow": "0",
+    "Financing Cash Flow": "0",
+    "Net Change in Cash": "0",
+    "Cash and Cash Equivalents": "0"
+  }
+}

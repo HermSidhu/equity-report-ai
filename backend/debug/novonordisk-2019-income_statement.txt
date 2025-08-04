@@ -1,0 +1,126 @@
+Consolidated income statement from the effective date of acquisition and up 
+to the effective date of disposal.
+Translation of foreign currencies
+Functional and presentation currency
+Items included in the financial statements of Novo Nordisk's entities are measured 
+using the currency of the primary economic environment in which the entity oper-
+ates (functional currency). The consolidated financial statements are presented in 
+Danish kroner (DKK), which is also the functional and presentation currency of the 
+parent company.
+Translation of transactions and balances
+Foreign currency transactions are translated into the functional currency using the 
+exchange rates prevailing at the transaction dates. Foreign exchange gains and 
+losses resulting from the settlement of such transactions and from the translation 
+at year-end exchange rates of monetary assets and liabilities are recognised in the 
+income statement.
+Foreign currency differences arising from the translation of effective qualifying 
+cash flow hedges are recognised in other comprehensive income. 
+Translation of Group companies
+Financial statements of foreign subsidiaries are translated into DKK at the 
+exchange rates prevailing at the end of the reporting period for balance sheet 
+items, and at average exchange rates for income statement items. 
+All effects of exchange rate adjustments are recognised in other comprehensive 
+income, i.e.:
+•   The translation of foreign subsidiaries’ net assets at the beginning of the year to 
+the exchange rates at the end of the reporting period.
+•   The translation of foreign subsidiaries’ statements of comprehensive income at 
+average to year-end exchange rates.
+Novo Nordisk Annual Report 2019Novo Nordisk Annual Report 2019
+Consolidated Financial Statements47
+
+Section 2
+Results for the year
+2.1 Net sales and rebates
+Accounting policies
+Revenue from sale of goods is recognised when Novo Nordisk has transferred 
+control of products sold to the buyer and it is probable that Novo Nordisk will 
+collect the consideration to which it is entitled for transferring the products. 
+Control of the products is transferred at a point in time, typically on delivery.
+The amount of sales to be recognised is based on the consideration Novo Nordisk 
+expects to receive in exchange for its goods. When sales are recognised, Novo 
+Nordisk also records estimates for a variety of sales deductions, including product 
+returns as well as rebates and discounts to government agencies, wholesalers, 
+health insurance companies, managed healthcare organisations and retail 
+customers. Sales deductions are recognised as a reduction of gross sales to arrive 
+at net sales, by assessing the expected value of the sales deductions (variable 
+consideration). Where contracts contain customer acceptance criteria, Novo 
+Nordisk recognises sales when the acceptance criteria are satisfied.
+In some markets, Novo Nordisk sells products on a sale-or-return basis. 
+Where there is historical experience or a reasonably accurate estimate of future 
+returns, estimated product returns are recorded as a reduction in sales.
+Where shipments of new products are made on a sale-or-return basis, without 
+sufficient historical experience for estimating sales returns, revenue is recorded 
+based on estimated demand and acceptance rates for well-established products 
+with similar market characteristics. If similar market characteristics do not exist, 
+revenue is recorded when there is evidence of consumption or when the right of 
+return has expired. 
+Key accounting estimates of sales deductions and provisions for sales 
+rebates
+Sales deductions are estimated and provided for at the time the related sales are 
+recorded. These estimates of unsettled rebate, discount and product return obliga-
+tions require use of significant judgement, as not all conditions are known at the 
+time of sale, for example total sales volume to a given customer.
+The estimates are based on analyses of existing contractual obligations and histor-
+ical experience. Provisions are calculated on the basis of a percentage of sales 
+for each product as defined by the contracts with the various customer groups. 
+Provisions for sales rebates are adjusted to actual amounts as rebates, discounts 
+and returns are processed.
+Novo Nordisk considers the provisions established for sales rebates to be reason-
+able and appropriate based on currently available information. However, the 
+actual amount of rebates and discounts may differ from the amounts estimated by 
+Management as more detailed information becomes available.
+Gross-to-net sales reconciliation
+DKK million201920182017
+Gross sales270,431230,701216,174
+US Managed Care and Medicare(84,202)(65,207)(53,077)
+US wholesaler charge-backs(33,772)(29,469)(28,324)
+US Medicaid rebates(14,365)(11,950)(12,491)
+Other US discounts and sales 
+returns(8,280)(6,606)(5,771)
+Non-US rebates, discounts and sales 
+returns(7,791)(5,638)(4,815)
+Total gross-to-net sales adjustments(148,410)(118,870)(104,478)
+Net sales122,021111,831111,696
+Sales discounts and sales rebates are predominantly issued in the US. As such, 
+rebates amount to 71% of gross sales in the US (68% in 2018 and 64% in 2017). 
+Novo Nordisk sales are impacted by exchange rate changes. For developments in 
+key currencies refer to note 4.3. 
+Pricing mechanisms in the US market
+In the US, sales rebates are paid in connection with public healthcare insurance 
+programmes, namely Medicare and Medicaid, as well as rebates to pharmacy 
+benefit managers (PBMs) and managed healthcare plans. Key customers in the US 
+include private payers, PBMs and government payers. PBMs and managed health-
+care plans play a role in negotiating price concessions with drug manufacturers for 
+both the commercial and government channels, and determine which drugs are 
+covered on their formularies (or 'preferred drug lists').
+US Managed Care and Medicare
+For Managed Care and Medicare, rebates are offered to a number of PBMs 
+and managed healthcare plans. These rebate programmes allow the customer 
+to receive a rebate after attaining certain performance parameters relating to 
+formulary status or pre-established market shares thresholds. Rebates are esti-
+mated according to the specific terms in each agreement, historical experience, 
+anticipated channel mix, growth rates and market share information. Novo 
+Nordisk adjusts the provision periodically to reflect actual sales performance. 
+Managed Care and Medicare rebates are generally settled around 100 days from 
+the transaction date.
+US wholesaler charge-backs
+Wholesaler charge-backs relate to contractual arrangements between Novo 
+Nordisk and indirect customers in the US whereby products are sold at contract 
+prices lower than the list price originally charged to wholesalers. A wholesaler 
+charge-back represents the difference between the invoice price to the wholesaler 
+and the indirect customer’s contract price. Accruals are calculated for estimated 
+charge-backs using a combination of factors such as historical experience, current 
+wholesaler inventory levels, contract terms and the value of claims received but 
+not yet processed. Wholesaler charge-backs are generally settled within 30 days of 
+the liability being incurred.
+US Medicaid rebates
+Medicaid is a government insurance programme. Medicaid rebates have been 
+estimated using a combination of historical experience, product and population 
+growth, price increases, and the impact of contracting strategies. The calculation 
+also involves interpretation of relevant regulations that are subject to changes in 
+interpretative guidance from government authorities. Novo Nordisk adjusts the 
+provision periodically to reflect actual sales performance. Medicaid rebates are 
+generally settled around 150 days from the transaction date.
+Other US discounts and sales returns
+Other discounts are provided to wholesalers, hospitals, pharmacies, etc. They 
+are usually linked to sales volume or provided as cash discounts. Accruals ar

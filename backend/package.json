@@ -4,9 +4,14 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test:parser": "ts-node src/tests/test-parser.ts",
+    "debug:parser": "ts-node src/debug/debug-parser.ts",
+    "debug:pdf": "ts-node src/debug/debug-pdf.ts",
+    "test:single-pdf": "ts-node src/tests/test-single-pdf.ts"
   },
   "dependencies": {
+    "@types/pdf-parse": "^1.1.5",
     "axios": "^1.6.0",
     "body-parser": "^1.20.2",
     "cheerio": "^1.0.0-rc.12",
@@ -14,6 +19,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "openai": "^5.11.0",
+    "pdf-parse": "^1.1.1",
     "puppeteer": "^24.15.0"
   },
   "devDependencies": {
