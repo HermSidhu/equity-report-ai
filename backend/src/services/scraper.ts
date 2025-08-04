@@ -3,10 +3,9 @@ import cheerio from "cheerio";
 import puppeteer from "puppeteer";
 import { downloadReports } from "./downloader";
 
-const INCLUDE_KEYWORDS =
-  /(annual report|integrated report|consolidated financial statements)/i;
+const INCLUDE_KEYWORDS = /(annual|integrated)/i;
 const EXCLUDE_KEYWORDS =
-  /(sustainability|esg|csr|presentation|quarter|q[1-4]|half-year|interim)/i;
+  /(tax|gri|tcfd|sasb|remuneration|interim|governance|sustainability|presentation)/i;
 
 async function scrapeStatic(
   irUrl: string
@@ -27,25 +26,23 @@ async function scrapeStatic(
       const text = $(el).text().trim();
       if (!href || !href.toLowerCase().endsWith(".pdf")) return;
 
-      const fullText = `${text} ${href}`.toLowerCase();
-      if (INCLUDE_KEYWORDS.test(fullText) && !EXCLUDE_KEYWORDS.test(fullText)) {
-        const yearMatch = fullText.match(/\b(20[0-9]{2})\b/);
-        if (!yearMatch) return;
-        const year = parseInt(yearMatch[1]);
-        if (year > 2013 && year <= 2024) {
-          const absoluteLink = href.startsWith("http")
-            ? href
-            : new URL(href, irUrl).toString();
-          reports.push({ year, link: absoluteLink });
-        }
+      const combined = `${text} ${href}`.toLowerCase();
+      if (!INCLUDE_KEYWORDS.test(combined) || EXCLUDE_KEYWORDS.test(combined))
+        return;
+
+      const yearMatch = combined.match(/\b(20[0-9]{2})\b/);
+      if (!yearMatch) return;
+      const year = parseInt(yearMatch[1]);
+      if (year >= 2014 && year <= 2024) {
+        const absoluteLink = href.startsWith("http")
+          ? href
+          : new URL(href, irUrl).toString();
+        reports.push({ year, link: absoluteLink });
       }
     });
 
     return reports.sort((a, b) => b.year - a.year).slice(0, 10);
-  } catch (err) {
-    console.log(
-      `⚠ Static scrape failed for ${irUrl}, error: ${(err as Error).message}`
-    );
+  } catch {
     return [];
   }
 }
@@ -64,83 +61,68 @@ async function scrapeWithPuppeteer(
   const page = await browser.newPage();
   await page.goto(irUrl, { waitUntil: "networkidle2", timeout: 60000 });
 
-  let reports: { year: number; link: string }[] = [];
+  const reports: { year: number; link: string }[] = [];
 
-  // Step 1: Look for any direct PDF links on the main page
-  const directLinks = await page.$$eval("a", (anchors) =>
+  const yearLinks = await page.$$eval("a", (anchors) =>
     anchors
-      .map((a) => ({
-        href: a.getAttribute("href") || "",
-        text: a.textContent?.trim() || "",
-      }))
-      .filter(
-        (link) =>
-          link.href.toLowerCase().endsWith(".pdf") &&
-          /(annual|report)/i.test(`${link.text} ${link.href}`)
-      )
+      .map((a) => a.getAttribute("href") || "")
+      .filter((href) => /annual-report\/20[0-9]{2}/.test(href))
   );
 
-  for (const { href, text } of directLinks) {
-    const yearMatch = `${text} ${href}`.match(/\b(20[0-9]{2})\b/);
-    if (yearMatch) {
-      const year = parseInt(yearMatch[1]);
-      if (year >= 2014 && year <= 2024) {
-        const absoluteLink = href.startsWith("http")
-          ? href
-          : new URL(href, irUrl).toString();
-        reports.push({ year, link: absoluteLink });
-      }
-    }
-  }
+  const uniqueYearLinks = Array.from(new Set(yearLinks));
+  console.log(`📂 Found year links: ${uniqueYearLinks.length}`);
 
-  // Step 2: If too few found, look for year-based navigation links
-  if (reports.length < 2) {
-    const yearLinks = await page.$$eval("a", (anchors) =>
-      anchors
-        .map((a) => a.getAttribute("href") || "")
-        .filter((href) => /annual-report\/20[0-9]{2}/.test(href))
+  for (const yLink of uniqueYearLinks) {
+    const yearUrl = yLink.startsWith("http")
+      ? yLink
+      : new URL(yLink, irUrl).toString();
+    const yearMatch = yearUrl.match(/\b(20[0-9]{2})\b/);
+    if (!yearMatch) continue;
+    const year = parseInt(yearMatch[1]);
+    if (year < 2014 || year > 2024) continue;
+
+    console.log(`➡ Navigating to ${yearUrl}`);
+    await page.goto(yearUrl, { waitUntil: "networkidle2", timeout: 60000 });
+
+    try {
+      await page.waitForSelector('a[href$=".pdf"]', { timeout: 10000 });
+    } catch {
+      console.log(`⚠ No PDF links found for year ${year}`);
+      continue;
+    }
+
+    const pdfLinks = await page.$$eval(
+      "a",
+      (anchors, y) =>
+        anchors
+          .map((a) => a.getAttribute("href") || "")
+          .filter(
+            (href) =>
+              href.toLowerCase().endsWith(".pdf") && href.includes(y.toString())
+          ),
+      year
     );
 
-    const uniqueYearLinks = Array.from(new Set(yearLinks));
-    console.log(`📂 Found year links: ${uniqueYearLinks.length}`);
+    for (const pdfLink of pdfLinks) {
+      const combined = pdfLink.toLowerCase();
+      if (!INCLUDE_KEYWORDS.test(combined) || EXCLUDE_KEYWORDS.test(combined))
+        continue;
 
-    for (const yLink of uniqueYearLinks) {
-      const yearUrl = yLink.startsWith("http")
-        ? yLink
-        : new URL(yLink, irUrl).toString();
-      const yearMatch = yearUrl.match(/\b(20[0-9]{2})\b/);
-      if (!yearMatch) continue;
-      const year = parseInt(yearMatch[1]);
-      if (year < 2014 || year > 2024) continue;
-
-      await page.goto(yearUrl, { waitUntil: "networkidle2", timeout: 60000 });
-
-      // Scrape for PDF links in the rendered DOM
-      const pdfLink = await page.$$eval("a", (anchors) => {
-        const link = anchors.find((a) => {
-          const href = a.getAttribute("href") || "";
-          return (
-            href.toLowerCase().endsWith(".pdf") &&
-            href.toLowerCase().includes("annual")
-          );
-        });
-        return link ? link.getAttribute("href") : null;
-      });
-
-      if (pdfLink) {
-        const absoluteLink = pdfLink.startsWith("http")
-          ? pdfLink
-          : new URL(pdfLink, yearUrl).toString();
-        reports.push({ year, link: absoluteLink });
-        console.log(`✅ Found PDF for year ${year}: ${absoluteLink}`);
-      } else {
-        console.log(`⚠ No PDF link found for year ${year} on ${yearUrl}`);
-      }
+      const absoluteLink = pdfLink.startsWith("http")
+        ? pdfLink
+        : new URL(pdfLink, yearUrl).toString();
+      reports.push({ year, link: absoluteLink });
+      console.log(`✅ Valid annual report for ${year}: ${absoluteLink}`);
     }
   }
 
   await browser.close();
-  return reports.sort((a, b) => b.year - a.year).slice(0, 10);
+
+  // Deduplicate by link
+  const uniqueReports = Array.from(
+    new Map(reports.map((r) => [r.link, r])).values()
+  );
+  return uniqueReports.sort((a, b) => b.year - a.year).slice(0, 10);
 }
 
 export async function scrapeAndDownloadAnnualReports(irUrl: string) {
