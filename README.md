@@ -64,7 +64,8 @@ Create `.env` files:
 **Backend (.env):**
 
 ```env
-PORT=3001
+PORT=5050
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 **Frontend (.env):**
@@ -105,10 +106,10 @@ npm run build
 
 ## API Endpoints
 
-- `GET /api/companies` - Get list of supported companies
-- `POST /api/scrape` - Scrape annual reports from company IR website
-- `POST /api/parse` - Parse financial statements from PDFs
-- `POST /api/aggregate` - Generate consolidated 10-year financial tables
+- `POST /api/download/annual_report` - Download annual reports from company IR website
+- `POST /api/parse` - Parse financial statements from downloaded PDFs using AI
+- `GET /api/parse/status` - Check parser service status
+- `GET /api/parse/companies` - List companies available for parsing
 
 ## Usage
 
