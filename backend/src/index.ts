@@ -11,7 +11,14 @@ import compiledDataRouter from "./routes/compiled_data";
 const app = express();
 const PORT = process.env.PORT || 5050;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // for local development
+      "https://equity-report-ai.pages.dev", // your deployed frontend
+    ],
+  })
+);
 app.use(bodyParser.json());
 
 app.use("/api/annual_reports", annualReportsRouter);
