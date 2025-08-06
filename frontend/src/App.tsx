@@ -29,8 +29,6 @@ import {
   IconDownload,
   IconChartBar,
   IconBrandGithub,
-  IconSun,
-  IconMoon,
   IconFileText,
   IconTable,
   IconAlertCircle,
@@ -55,9 +53,10 @@ interface DownloadedFile {
 }
 
 interface DownloadProgress {
-  isDownloading: boolean;
+  isProcessing: boolean;
   progress: number;
   status: string;
+  stage: "download" | "parse" | "complete";
 }
 
 // Create a client
@@ -74,25 +73,13 @@ function MainApp() {
   const [selectedCompany, setSelectedCompany] = useState<
     (typeof COMPANIES)[number] | null
   >(null);
-  const [activeTab, setActiveTab] = useState<"download" | "parse" | "data">(
-    "download"
-  );
+  const [activeTab, setActiveTab] = useState<"process" | "data">("process");
   const [downloadProgress, setDownloadProgress] = useState<{
     [key: string]: DownloadProgress;
-  }>({});
-  const [parseProgress, setParseProgress] = useState<{
-    [key: string]: boolean;
   }>({});
   const [downloadedFiles, setDownloadedFiles] = useState<{
     [key: string]: DownloadedFile[];
   }>({});
-
-  const preferredColorScheme = useColorScheme();
-  const [colorScheme, setColorScheme] = useLocalStorage({
-    key: "mantine-color-scheme",
-    defaultValue: preferredColorScheme,
-    getInitialValueInEffect: true,
-  });
 
   // API hooks - only using consolidated data query
   const { data: consolidatedData, isLoading: dataLoading } =
@@ -180,34 +167,38 @@ function MainApp() {
       if (consolidatedData && !dataLoading) {
         setActiveTab("data");
       } else {
-        // Default to download tab if no data available
-        setActiveTab("download");
+        // Default to process tab if no data available
+        setActiveTab("process");
       }
     }
   }, [selectedCompany, consolidatedData, dataLoading]);
 
-  const handleDownload = async (company: (typeof COMPANIES)[number]) => {
+  const handleDownloadAndParse = async (
+    company: (typeof COMPANIES)[number]
+  ) => {
     setDownloadProgress((prev) => ({
       ...prev,
       [company.id]: {
-        isDownloading: true,
+        isProcessing: true,
         progress: 0,
         status: "Starting download...",
+        stage: "download",
       },
     }));
 
     try {
-      // Update progress
+      // DOWNLOAD PHASE
       setDownloadProgress((prev) => ({
         ...prev,
         [company.id]: {
           ...prev[company.id],
-          progress: 20,
+          progress: 10,
           status: "Connecting to server...",
+          stage: "download",
         },
       }));
 
-      const response = await fetch("/api/annual_reports", {
+      const downloadResponse = await fetch("/api/annual_reports", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -222,64 +213,112 @@ function MainApp() {
         ...prev,
         [company.id]: {
           ...prev[company.id],
-          progress: 50,
+          progress: 30,
           status: "Scraping reports...",
+          stage: "download",
         },
       }));
 
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`);
+      if (!downloadResponse.ok) {
+        throw new Error(`Download failed: ${downloadResponse.statusText}`);
       }
 
-      setDownloadProgress((prev) => ({
-        ...prev,
-        [company.id]: {
-          ...prev[company.id],
-          progress: 80,
-          status: "Processing files...",
-        },
-      }));
-
-      const result = await response.json();
+      const downloadResult = await downloadResponse.json();
 
       setDownloadProgress((prev) => ({
         ...prev,
         [company.id]: {
           ...prev[company.id],
-          progress: 100,
-          status: "Download complete!",
+          progress: 50,
+          status: "Download complete! Starting AI parsing...",
+          stage: "parse",
         },
       }));
 
-      // Show success notification
+      // Show download success notification
       notifications.show({
         title: "Download Complete",
-        message: `Downloaded ${result.totalFiles} reports for ${company.name}`,
-        color: "green",
+        message: `Downloaded ${downloadResult.totalFiles} reports for ${company.name}. Now parsing...`,
+        color: "blue",
         icon: <IconCheck size={16} />,
       });
 
       // Refresh the files list
       await fetchDownloadedFiles(company.id);
 
-      // Reset progress after a delay
+      // PARSE PHASE
+      setDownloadProgress((prev) => ({
+        ...prev,
+        [company.id]: {
+          ...prev[company.id],
+          progress: 60,
+          status: "AI is analyzing PDF reports...",
+          stage: "parse",
+        },
+      }));
+
+      const parseResponse = await fetch(`/api/parse/${company.id}`, {
+        method: "POST",
+      });
+
+      if (!parseResponse.ok) {
+        throw new Error(`Parsing failed: ${parseResponse.statusText}`);
+      }
+
+      const parseResult = await parseResponse.json();
+
+      setDownloadProgress((prev) => ({
+        ...prev,
+        [company.id]: {
+          ...prev[company.id],
+          progress: 90,
+          status: "Extracting financial data...",
+          stage: "parse",
+        },
+      }));
+
+      // Final completion
+      setDownloadProgress((prev) => ({
+        ...prev,
+        [company.id]: {
+          ...prev[company.id],
+          progress: 100,
+          status: "Processing complete! Loading financial data...",
+          stage: "complete",
+        },
+      }));
+
+      // Show success notification
+      notifications.show({
+        title: "Processing Complete",
+        message: `Successfully processed ${downloadResult.totalFiles} reports for ${company.name}`,
+        color: "green",
+        icon: <IconCheck size={16} />,
+      });
+
+      // Wait a moment then switch to data view
       setTimeout(() => {
+        setActiveTab("data");
         setDownloadProgress((prev) => ({
           ...prev,
           [company.id]: {
-            isDownloading: false,
+            isProcessing: false,
             progress: 0,
             status: "",
+            stage: "complete",
           },
         }));
       }, 2000);
 
-      console.log("Download successful:", result);
+      console.log("Download and parse successful:", {
+        downloadResult,
+        parseResult,
+      });
     } catch (error) {
-      console.error("Download failed:", error);
+      console.error("Process failed:", error);
 
       notifications.show({
-        title: "Download Failed",
+        title: "Processing Failed",
         message: error instanceof Error ? error.message : "An error occurred",
         color: "red",
       });
@@ -287,31 +326,12 @@ function MainApp() {
       setDownloadProgress((prev) => ({
         ...prev,
         [company.id]: {
-          isDownloading: false,
+          isProcessing: false,
           progress: 0,
           status: "",
+          stage: "download",
         },
       }));
-    }
-  };
-
-  const handleParse = async (companyId: string) => {
-    setParseProgress((prev) => ({ ...prev, [companyId]: true }));
-    try {
-      const response = await fetch(`/api/parse/${companyId}`, {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Parsing failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      console.log("Parsing successful:", result);
-    } catch (error) {
-      console.error("Parsing failed:", error);
-    } finally {
-      setParseProgress((prev) => ({ ...prev, [companyId]: false }));
     }
   };
 
@@ -321,19 +341,6 @@ function MainApp() {
     } catch (error) {
       console.error("CSV download failed:", error);
     }
-  };
-
-  const handleDownloadComparativeCSV = async () => {
-    try {
-      const companyIds = COMPANIES.map((c) => c.id);
-      await downloadComparativeCSV(companyIds);
-    } catch (error) {
-      console.error("Comparative CSV download failed:", error);
-    }
-  };
-
-  const toggleColorScheme = () => {
-    setColorScheme(colorScheme === "dark" ? "light" : "dark");
   };
 
   if (false) {
@@ -381,25 +388,11 @@ function MainApp() {
                   {companies.length} Companies Available
                 </Badge>
 
-                <Tooltip label="Toggle theme">
-                  <ActionIcon
-                    variant="subtle"
-                    onClick={toggleColorScheme}
-                    size="lg"
-                  >
-                    {colorScheme === "dark" ? (
-                      <IconSun size={20} />
-                    ) : (
-                      <IconMoon size={20} />
-                    )}
-                  </ActionIcon>
-                </Tooltip>
-
                 <Tooltip label="View on GitHub">
                   <ActionIcon
                     variant="subtle"
                     component="a"
-                    href="https://github.com/your-repo/equity-report-ai"
+                    href="https://github.com/HermSidhu/equity-report-ai"
                     target="_blank"
                     size="lg"
                   >
@@ -437,11 +430,11 @@ function MainApp() {
                         {company.name}
                       </Text>
                       <Text size="xs" c="dimmed">
-                        {company.id}
+                        {company.exchange}
                       </Text>
                     </Stack>
                     <Badge variant="light" size="xs">
-                      {company.id.toUpperCase()}
+                      {company.ticker}
                     </Badge>
                   </Group>
                 </Card>
@@ -454,20 +447,12 @@ function MainApp() {
 
             <Stack gap="xs">
               <Button
-                variant={activeTab === "download" ? "filled" : "light"}
+                variant={activeTab === "process" ? "filled" : "light"}
                 leftSection={<IconDownload size={16} />}
-                onClick={() => setActiveTab("download")}
+                onClick={() => setActiveTab("process")}
                 size="sm"
               >
-                Download Reports
-              </Button>
-              <Button
-                variant={activeTab === "parse" ? "filled" : "light"}
-                leftSection={<IconFileText size={16} />}
-                onClick={() => setActiveTab("parse")}
-                size="sm"
-              >
-                Parse PDFs
+                Download & Parse Annual Reports
               </Button>
               <Button
                 variant={activeTab === "data" ? "filled" : "light"}
@@ -500,56 +485,102 @@ function MainApp() {
                   <Box>
                     <Title order={2}>{selectedCompany.name}</Title>
                     <Group gap="xs" mt="xs">
-                      <Badge variant="light">
-                        {selectedCompany.id.toUpperCase()}
+                      <Badge variant="light" size="sm" color="blue">
+                        {selectedCompany.ticker}
+                      </Badge>
+                      <Badge variant="outline" size="sm" color="green">
+                        {selectedCompany.country}
+                      </Badge>
+                      <Badge variant="dot" size="sm" color="orange">
+                        {selectedCompany.exchange}
                       </Badge>
                     </Group>
                   </Box>
                 </Group>
 
-                {/* Download Tab */}
-                {activeTab === "download" && (
+                {/* Process Tab - Combined Download & Parse */}
+                {activeTab === "process" && (
                   <Stack gap="md">
                     <Card withBorder padding="lg">
                       <Stack gap="md">
                         <Group justify="space-between" align="center">
                           <Box>
-                            <Title order={3}>Download Annual Reports</Title>
+                            <Title order={3}>
+                              Download & Parse Annual Reports
+                            </Title>
                             <Text size="sm" c="dimmed" mt={4}>
-                              Download the latest annual reports from the
-                              company's investor relations page
+                              Download annual reports and extract financial data
+                              using AI in one step
                             </Text>
                           </Box>
                           <Button
-                            onClick={() => handleDownload(selectedCompany)}
+                            onClick={() =>
+                              handleDownloadAndParse(selectedCompany)
+                            }
                             loading={
                               downloadProgress[selectedCompany.id]
-                                ?.isDownloading || false
+                                ?.isProcessing || false
                             }
                             leftSection={<IconDownload size={16} />}
                             size="sm"
                           >
-                            Start Download
+                            Download & Parse
                           </Button>
                         </Group>
 
-                        {downloadProgress[selectedCompany.id]
-                          ?.isDownloading && (
+                        {downloadProgress[selectedCompany.id]?.isProcessing && (
                           <Box>
-                            <Text size="sm" mb="xs">
-                              {downloadProgress[selectedCompany.id]?.status ||
-                                "Downloading reports..."}
-                            </Text>
+                            <Group justify="space-between" mb="xs">
+                              <Text size="sm">
+                                {downloadProgress[selectedCompany.id]?.status ||
+                                  "Processing..."}
+                              </Text>
+                              <Badge
+                                variant="light"
+                                color={
+                                  downloadProgress[selectedCompany.id]
+                                    ?.stage === "download"
+                                    ? "blue"
+                                    : downloadProgress[selectedCompany.id]
+                                        ?.stage === "parse"
+                                    ? "orange"
+                                    : "green"
+                                }
+                                size="sm"
+                              >
+                                {downloadProgress[selectedCompany.id]?.stage ===
+                                "download"
+                                  ? "Downloading"
+                                  : downloadProgress[selectedCompany.id]
+                                      ?.stage === "parse"
+                                  ? "Parsing"
+                                  : "Complete"}
+                              </Badge>
+                            </Group>
                             <Progress
                               value={
                                 downloadProgress[selectedCompany.id]
                                   ?.progress || 0
                               }
                               animated
+                              color={
+                                downloadProgress[selectedCompany.id]?.stage ===
+                                "download"
+                                  ? "blue"
+                                  : downloadProgress[selectedCompany.id]
+                                      ?.stage === "parse"
+                                  ? "orange"
+                                  : "green"
+                              }
                             />
                             <Text size="xs" c="dimmed" mt="xs">
-                              This may take several minutes depending on the
-                              number and size of reports
+                              {downloadProgress[selectedCompany.id]?.stage ===
+                              "download"
+                                ? "Downloading reports from investor relations page..."
+                                : downloadProgress[selectedCompany.id]
+                                    ?.stage === "parse"
+                                ? "AI is analyzing PDF reports and extracting financial data..."
+                                : "Processing complete! Financial data will be available shortly."}
                             </Text>
                           </Box>
                         )}
@@ -570,7 +601,7 @@ function MainApp() {
                       <Accordion.Item value="downloaded-reports">
                         <Accordion.Control>
                           <Group justify="space-between" mr="xl">
-                            <Text fw={500}>Downloaded Reports</Text>
+                            <Text fw={500}>Reports Downloaded</Text>
                             <Badge variant="light" color="green" size="sm">
                               {downloadedFiles[selectedCompany.id]?.length || 0}{" "}
                               files
@@ -591,11 +622,11 @@ function MainApp() {
                                     <Group justify="space-between">
                                       <Group>
                                         <ThemeIcon
-                                          color="blue"
+                                          color="green"
                                           size={32}
                                           radius="xl"
                                         >
-                                          <IconFile size={16} />
+                                          <IconCheck size={16} />
                                         </ThemeIcon>
                                         <Box>
                                           <Text size="sm" fw={500}>
@@ -608,7 +639,7 @@ function MainApp() {
                                             {(file.size / 1024 / 1024).toFixed(
                                               1
                                             )}{" "}
-                                            MB • Downloaded:{" "}
+                                            MB • Downloaded & Parsed:{" "}
                                             {new Date(
                                               file.downloadedAt
                                             ).toLocaleDateString()}
@@ -618,7 +649,7 @@ function MainApp() {
                                       <Badge
                                         variant="light"
                                         size="xs"
-                                        color={file.year ? "green" : "gray"}
+                                        color="green"
                                       >
                                         {file.year || "Unknown Year"}
                                       </Badge>
@@ -630,129 +661,16 @@ function MainApp() {
                           ) : (
                             <Alert
                               icon={<IconAlertCircle size={16} />}
-                              title="No Reports Downloaded"
+                              title="No Reports Processed"
                               color="yellow"
                             >
-                              Click "Start Download" above to download annual
-                              reports for {selectedCompany.name}.
+                              Click "Download & Parse" above to download and
+                              process annual reports for {selectedCompany.name}.
                             </Alert>
                           )}
                         </Accordion.Panel>
                       </Accordion.Item>
                     </Accordion>
-                  </Stack>
-                )}
-
-                {/* Parse Tab */}
-                {activeTab === "parse" && (
-                  <Stack gap="md">
-                    <Card withBorder padding="lg">
-                      <Stack gap="md">
-                        <Group justify="space-between" align="center">
-                          <Box>
-                            <Title order={3}>Parse PDF Reports</Title>
-                            <Text size="sm" c="dimmed" mt={4}>
-                              Extract financial data from downloaded PDF reports
-                              using AI
-                            </Text>
-                          </Box>
-                          <Button
-                            onClick={() => handleParse(selectedCompany.id)}
-                            loading={parseProgress[selectedCompany.id]}
-                            leftSection={<IconFileText size={16} />}
-                            size="sm"
-                            disabled={
-                              !downloadedFiles[selectedCompany.id]?.length
-                            }
-                          >
-                            Start Parsing
-                          </Button>
-                        </Group>
-
-                        {parseProgress[selectedCompany.id] && (
-                          <Box>
-                            <Text size="sm" mb="xs">
-                              Parsing PDFs with AI...
-                            </Text>
-                            <Progress value={30} animated />
-                            <Text size="xs" c="dimmed" mt="xs">
-                              AI is analyzing the reports to extract financial
-                              statements
-                            </Text>
-                          </Box>
-                        )}
-
-                        <Alert color="yellow" variant="light">
-                          <Text size="sm">
-                            Ensure reports have been downloaded before starting
-                            the parsing process.
-                          </Text>
-                        </Alert>
-                      </Stack>
-                    </Card>
-
-                    {/* Available Files for Parsing */}
-                    <Card withBorder padding="lg">
-                      <Stack gap="md">
-                        <Group justify="space-between" align="center">
-                          <Title order={4}>Reports Available for Parsing</Title>
-                          <Badge variant="light" color="blue">
-                            {downloadedFiles[selectedCompany.id]?.length || 0}{" "}
-                            available
-                          </Badge>
-                        </Group>
-
-                        {downloadedFiles[selectedCompany.id]?.length > 0 ? (
-                          <List spacing="xs" size="sm">
-                            {downloadedFiles[selectedCompany.id].map(
-                              (file, index) => (
-                                <List.Item
-                                  key={index}
-                                  icon={
-                                    <ThemeIcon
-                                      color="orange"
-                                      size={24}
-                                      radius="xl"
-                                    >
-                                      <IconFileText size={12} />
-                                    </ThemeIcon>
-                                  }
-                                >
-                                  <Group justify="space-between">
-                                    <Box>
-                                      <Text size="sm" fw={500}>
-                                        {file.filename}
-                                      </Text>
-                                      <Text size="xs" c="dimmed">
-                                        Ready for AI parsing •{" "}
-                                        {(file.size / 1024 / 1024).toFixed(1)}{" "}
-                                        MB
-                                      </Text>
-                                    </Box>
-                                    <Badge
-                                      variant="light"
-                                      size="xs"
-                                      color="orange"
-                                    >
-                                      {file.year || "Unknown Year"}
-                                    </Badge>
-                                  </Group>
-                                </List.Item>
-                              )
-                            )}
-                          </List>
-                        ) : (
-                          <Alert
-                            icon={<IconAlertCircle size={16} />}
-                            title="No Reports Available"
-                            color="yellow"
-                          >
-                            Download annual reports first from the "Download
-                            Reports" tab to make them available for parsing.
-                          </Alert>
-                        )}
-                      </Stack>
-                    </Card>
                   </Stack>
                 )}
 
