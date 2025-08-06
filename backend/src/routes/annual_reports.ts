@@ -12,9 +12,9 @@ router.post("/", async (req, res) => {
   const { companyName, irUrl } = req.body;
 
   if (!companyName || !irUrl) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       error: "Missing companyName or irUrl in request body",
-      example: { companyName: "novonordisk", irUrl: "https://..." }
+      example: { companyName: "novonordisk", irUrl: "https://..." },
     });
   }
 

@@ -58,8 +58,7 @@ router.post("/", async (req, res) => {
         success: false,
         error: "No PDF files found for company",
         details: error.message,
-        suggestion:
-          "Download annual reports first using /api/annual_reports",
+        suggestion: "Download annual reports first using /api/annual_reports",
       });
     }
 
@@ -78,8 +77,7 @@ router.post("/", async (req, res) => {
         success: false,
         error: "Annual reports directory not found",
         details: `No reports found for company: ${company}`,
-        suggestion:
-          "Download annual reports first using /api/annual_reports",
+        suggestion: "Download annual reports first using /api/annual_reports",
       });
     }
 
