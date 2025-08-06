@@ -119,14 +119,14 @@ async function testCSV(company: (typeof COMPANIES)[0]): Promise<void> {
   // Test CSV download
   const response = await axios.get(
     `${API_BASE_URL}/api/csv/download/${company.code}`,
-    { responseType: 'text', timeout: 30000 }
+    { responseType: "text", timeout: 30000 }
   );
 
   if (!response.data || response.data.length === 0) {
     throw new Error(`CSV download failed: Empty response`);
   }
 
-  const lines = response.data.split('\n');
+  const lines = response.data.split("\n");
   if (lines.length < 2) {
     throw new Error(`CSV format invalid: Less than 2 lines`);
   }
@@ -318,9 +318,13 @@ async function runAllTests() {
     );
 
     // Test CSV companies endpoint
-    const csvCompaniesResponse = await axios.get(`${API_BASE_URL}/api/csv/companies`);
+    const csvCompaniesResponse = await axios.get(
+      `${API_BASE_URL}/api/csv/companies`
+    );
     console.log("✅ CSV companies listing endpoint working");
-    console.log(`   CSV-available companies: ${csvCompaniesResponse.data.total}`);
+    console.log(
+      `   CSV-available companies: ${csvCompaniesResponse.data.total}`
+    );
 
     // Test CSV comparative endpoint if multiple companies available
     if (csvCompaniesResponse.data.companies.length >= 2) {
@@ -328,17 +332,18 @@ async function runAllTests() {
       const compareResponse = await axios.post(
         `${API_BASE_URL}/api/csv/compare`,
         { companies: testCompanies },
-        { 
-          responseType: 'text',
+        {
+          responseType: "text",
           headers: { "Content-Type": "application/json" },
-          timeout: 30000
+          timeout: 30000,
         }
       );
       if (compareResponse.data && compareResponse.data.length > 0) {
-        console.log(`✅ CSV comparative export working (${testCompanies.join(", ")})`);
+        console.log(
+          `✅ CSV comparative export working (${testCompanies.join(", ")})`
+        );
       }
     }
-
   } catch (error) {
     console.log("⚠️  Some status endpoints may not be working");
   }

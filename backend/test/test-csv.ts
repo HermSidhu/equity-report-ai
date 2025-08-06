@@ -1,10 +1,7 @@
 #!/usr/bin/env ts-node
 
 /**
- * Test script for CSV expo    // Save to CSV storage directory for inspection
-    const csvFile = path.join(csvDir, `${companies[0]}_test.csv`);
-    fs.writeFileSync(csvFile, downloadResponse.data);
-    console.log(`💾 Sample saved to: ${csvFile}`);onality
+ * Test script for CSV export functionality
  * Usage: npm run test:csv
  */
 
@@ -19,12 +16,6 @@ async function testCSVFunctionality() {
   console.log("=".repeat(60));
   console.log(`🚀 API Base URL: ${API_BASE_URL}`);
   console.log("=".repeat(60));
-
-  // Set up CSV storage directory
-  const csvDir = path.join(__dirname, "../../storage/csv");
-  if (!fs.existsSync(csvDir)) {
-    fs.mkdirSync(csvDir, { recursive: true });
-  }
 
   try {
     // Test 1: List available companies
@@ -76,10 +67,15 @@ async function testCSVFunctionality() {
       `📏 Content length: ${downloadResponse.data.length} characters`
     );
 
-    // Save to CSV storage directory for inspection
-    const csvFile = path.join(csvDir, `${companies[0]}_test.csv`);
-    fs.writeFileSync(csvFile, downloadResponse.data);
-    console.log(`💾 Sample saved to: ${csvFile}`);
+    // Save to temporary file for inspection
+    const tempDir = path.join(__dirname, "../temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const tempFile = path.join(tempDir, `${companies[0]}_test.csv`);
+    fs.writeFileSync(tempFile, downloadResponse.data);
+    console.log(`💾 Sample saved to: ${tempFile}`);
 
     // Show first few lines
     const lines = downloadResponse.data.split("\n");
@@ -113,7 +109,7 @@ async function testCSVFunctionality() {
 
       // Save comparative CSV
       const compareFile = path.join(
-        csvDir,
+        tempDir,
         `comparison_${compareCompanies.join("_")}_test.csv`
       );
       fs.writeFileSync(compareFile, compareResponse.data);
@@ -145,7 +141,7 @@ async function testCSVFunctionality() {
 
     console.log("\n" + "=".repeat(60));
     console.log("🎉 All CSV tests completed successfully!");
-    console.log(`📁 Test files saved in: ${csvDir}`);
+    console.log(`📁 Test files saved in: ${tempDir}`);
     console.log("=".repeat(60));
   } catch (error: any) {
     console.error("\n❌ CSV Test Failed!");
