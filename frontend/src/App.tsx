@@ -16,7 +16,6 @@ import {
   Progress,
   Box,
   Loader,
-  List,
   ThemeIcon,
   Accordion,
   Table,
@@ -29,16 +28,12 @@ import {
   IconDownload,
   IconChartBar,
   IconBrandGithub,
-  IconFileText,
-  IconTable,
   IconAlertCircle,
-  IconFile,
   IconCheck,
 } from "@tabler/icons-react";
-import { useLocalStorage, useColorScheme } from "@mantine/hooks";
 
 // import { ProgressTracker } from "@/components/ProgressTracker";
-import { downloadCSVFile, downloadComparativeCSV } from "@/utils/api";
+import { downloadCSVFile } from "@/utils/api";
 import { COMPANIES } from "../companies";
 
 import { useConsolidatedData } from "@/hooks/useApi";
