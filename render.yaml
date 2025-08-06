@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: equity-report-ai-backend
+    env: node
+    buildCommand: cd backend && npm install && npm run build && npx puppeteer browsers install chrome
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/.cache/puppeteer
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: true

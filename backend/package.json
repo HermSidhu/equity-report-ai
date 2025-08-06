@@ -5,6 +5,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "postinstall": "npx puppeteer browsers install chrome",
     "test:parser": "ts-node src/tests/test-parser.ts",
     "debug:parser": "ts-node src/debug/debug-parser.ts",
     "debug:pdf": "ts-node src/debug/debug-pdf.ts",

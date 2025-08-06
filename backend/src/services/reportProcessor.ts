@@ -458,6 +458,10 @@ export async function scrapeAndDownloadReports(
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
       "--disable-web-security",
+      "--disable-features=VizDisplayCompositor",
+      "--disable-extensions",
+      "--no-first-run",
+      "--single-process", // Important for Render
     ],
   });
 
