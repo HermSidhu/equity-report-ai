@@ -1,4 +1,39 @@
-# 🚀 AI Equity Annual Report Compiler
+# 🚀 AI Eq- 🎨 **Modern In## 📸 Sc- 📊 **Data Visualization\*\*: Multi-metric line charts with customizable colors and proper N/A data handling
+
+- 📥 **Flexible Data Export**: Export to CSV, JSON, or comparative analysis formats
+- 🔧 **Production-Ready**: Comprehensive error handling, status tracking, and deployment configuration
+- ⚡ **Real-time Progress**: Live updates during scraping and parsing operations with detailed progress indicators
+- 🌐 **Deployed & Accessible**: Full production deployment on Cloudflare Pages (frontend) and Render (backend)
+- 📋 **Postman Collection**: Complete API documentation and testing suite included
+
+## 📸 Screenshotss
+
+<div align="center">
+
+### Application Dashboard
+
+![Application Dashboard](./frontend/screenshots/Screenshot%202025-08-06%20at%208.10.53%20AM.png)
+
+### Financial Data Visualization
+
+![Financial Data Visualization](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.14%20AM.png)
+
+### Company Analysis Interface
+
+![Company Analysis Interface](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.42%20AM.png)
+
+</div>
+
+## 🛠️ Tech Stackan interface built with Mantine v7 components, React Query for state management, and interactive Recharts visualizations
+
+- 📊 **Data Visualization**: Multi-metric line charts with customizable colors and proper N/A data handling
+- 📥 **Flexible Data Export**: Export to CSV, JSON, or comparative analysis formats
+- 🔧 **Production-Ready**: Comprehensive error handling, status tracking, and deployment configuration
+- ⚡ **Real-time Progress**: Live updates during scraping and parsing operations with detailed progress indicators
+- 🌐 **Deployed & Accessible**: Full production deployment on Cloudflare Pages (frontend) and Render (backend)
+- 📋 **Postman Collection**: Complete API documentation and testing suite included
+
+## 📸 Screenshotsal Report Compiler
 
 A full-stack TypeScript application that automatically scrapes, parses, and compiles companies' annual reports into clean, consolidated financial statements. **Live Demo:** [Frontend](https://equity-report-ai.pages.dev) | [Backend API](https://equity-report-ai.onrender.com)
 
@@ -22,9 +57,17 @@ A full-stack TypeScript application that automatically scrapes, parses, and comp
 
 ### Application Dashboard
 
-![Application Dashboard](frontend/screenshots/Screenshot%202025-08-06%20at%208.10.53%20AM.png)
+![Application Dashboard](./frontend/screenshots/Screenshot%202025-08-06%20at%208.10.53%20AM.png)
 
 ### Financial Data Visualization
+
+![Financial Data Visualization](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.14%20AM.png)
+
+### Company Analysis Interface
+
+![Company Analysis Interface](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.42%20AM.png)
+
+</div>
 
 ![Financial Data Visualization](frontend/screenshots/Screenshot%202025-08-06%20at%208.11.14%20AM.png)
 
