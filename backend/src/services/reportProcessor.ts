@@ -2,11 +2,41 @@ import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
 import axios from "axios";
+import { execSync } from "child_process";
 
 interface ReportLink {
   text: string;
   href: string;
   year?: number;
+}
+
+// Function to ensure Chrome is installed
+async function ensureChromeInstalled() {
+  try {
+    console.log("🔧 Checking Chrome installation...");
+
+    // Try to launch a test browser to check if Chrome is available
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    await browser.close();
+    console.log("✅ Chrome is available and working");
+    return true;
+  } catch (error) {
+    console.log("❌ Chrome not found, attempting to install...");
+    try {
+      execSync("npx puppeteer browsers install chrome", {
+        stdio: "inherit",
+        timeout: 120000, // 2 minutes timeout
+      });
+      console.log("✅ Chrome installation completed");
+      return true;
+    } catch (installError) {
+      console.error("❌ Chrome installation failed:", installError);
+      return false;
+    }
+  }
 }
 
 interface DownloadResult {
@@ -438,6 +468,14 @@ export async function scrapeAndDownloadReports(
 ): Promise<DownloadResult> {
   console.log(`🔍 Scraping reports from: ${irUrl}`);
 
+  // Ensure Chrome is installed before proceeding
+  const chromeReady = await ensureChromeInstalled();
+  if (!chromeReady) {
+    throw new Error(
+      "Chrome browser is not available and could not be installed"
+    );
+  }
+
   const companyName = extractCompanyName(irUrl);
   const downloadDir = path.join(
     __dirname,
@@ -451,19 +489,32 @@ export async function scrapeAndDownloadReports(
     console.log(`📁 Created directory: ${downloadDir}`);
   }
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-web-security",
-      "--disable-features=VizDisplayCompositor",
-      "--disable-extensions",
-      "--no-first-run",
-      "--single-process", // Important for Render
-    ],
-  });
+  // Enhanced Puppeteer configuration for production deployment
+  let browser;
+  try {
+    console.log("🔧 Launching Puppeteer browser...");
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-web-security",
+        "--disable-features=VizDisplayCompositor",
+        "--disable-extensions",
+        "--no-first-run",
+        "--single-process",
+        "--disable-gpu",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding",
+      ],
+    });
+    console.log("✅ Browser launched successfully");
+  } catch (error) {
+    console.error("❌ Failed to launch browser:", error);
+    throw error;
+  }
 
   try {
     const page = await browser.newPage();

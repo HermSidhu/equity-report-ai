@@ -328,8 +328,11 @@ function MainApp() {
   // Function to fetch downloaded files for a company
   const fetchDownloadedFiles = async (companyId: string) => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
-      const response = await fetch(`${API_BASE_URL}/api/annual_reports/${companyId}/files`);
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5050";
+      const response = await fetch(
+        `${API_BASE_URL}/api/annual_reports/${companyId}/files`
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch files: ${response.statusText}`);
       }
@@ -380,17 +383,21 @@ function MainApp() {
         },
       }));
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
-      const downloadResponse = await fetch(`${API_BASE_URL}/api/annual_reports`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          companyName: company.id,
-          irUrl: company.irUrl,
-        }),
-      });
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5050";
+      const downloadResponse = await fetch(
+        `${API_BASE_URL}/api/annual_reports`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            companyName: company.id,
+            irUrl: company.irUrl,
+          }),
+        }
+      );
 
       setDownloadProgress((prev) => ({
         ...prev,
@@ -440,9 +447,12 @@ function MainApp() {
         },
       }));
 
-      const parseResponse = await fetch(`${API_BASE_URL}/api/parse/${company.id}`, {
-        method: "POST",
-      });
+      const parseResponse = await fetch(
+        `${API_BASE_URL}/api/parse/${company.id}`,
+        {
+          method: "POST",
+        }
+      );
 
       if (!parseResponse.ok) {
         throw new Error(`Parsing failed: ${parseResponse.statusText}`);
