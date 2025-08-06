@@ -105,7 +105,7 @@ EXTRACTION RULES:
 - Ignore segment or geographical breakdowns
 
 ANNUAL REPORT TEXT (showing more context):
-${pdfText.substring(0, 100000)} // Increased from 50k to 100k characters
+${pdfText.substring(0, 100000)}
 
 Return ONLY the JSON object, no explanations.`;
 }
@@ -156,7 +156,7 @@ export async function parsePDFWithAI(
         },
       ],
       temperature: 0.1, // Low temperature for consistent parsing
-      max_tokens: 1000000,
+      max_tokens: 16384,
     });
 
     const aiResponse = response.choices[0]?.message?.content;
@@ -202,6 +202,26 @@ export async function parsePDFWithAI(
       cash_flow: parsedData.cash_flow,
     };
   } catch (error) {
+    // Handle specific OpenAI errors
+    if (error instanceof Error) {
+      if (
+        error.message.includes("rate_limit_exceeded") ||
+        error.message.includes("Request too large")
+      ) {
+        console.error(`⏳ Rate limit exceeded for ${path.basename(filePath)}`);
+        console.error(
+          `💡 PDF may be too large for current token limit (30k TPM)`
+        );
+        console.error(
+          `🔧 Consider upgrading OpenAI tier or reducing character limit further`
+        );
+      } else if (error.message.includes("insufficient_quota")) {
+        console.error(
+          `💳 OpenAI quota exceeded. Check billing at https://platform.openai.com/account/billing`
+        );
+      }
+    }
+
     console.error(`❌ Error parsing PDF ${filePath}:`, error);
     return null;
   }
@@ -332,7 +352,7 @@ export async function parseFinancialStatements(
     }
 
     // Add delay between API calls to avoid rate limiting
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 
   if (parseResults.length === 0) {
@@ -401,7 +421,7 @@ export class OpenAIProvider implements AIProvider {
         },
       ],
       temperature: 0.1,
-      max_tokens: 1000000,
+      max_tokens: 16384,
     });
 
     return response.choices[0]?.message?.content;

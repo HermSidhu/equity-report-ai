@@ -361,7 +361,7 @@ async function downloadPdf(url: string, filePath: string): Promise<boolean> {
 
     const response = await axios.get(finalUrl, {
       responseType: "stream",
-      timeout: 120000, // Increased timeout
+      timeout: 120000,
       maxRedirects: 5,
       headers: {
         "User-Agent":
@@ -471,12 +471,26 @@ export async function scrapeAndDownloadReports(
     );
 
     console.log(`🌐 Navigating to: ${irUrl}`);
-    await page.goto(irUrl, {
-      waitUntil: "networkidle2",
-      timeout: 60000,
-    });
-
-    console.log(`✅ Successfully navigated to: ${irUrl}`);
+    try {
+      await page.goto(irUrl, {
+        waitUntil: "networkidle2",
+        timeout: 120000,
+      });
+      console.log(`✅ Successfully navigated to: ${irUrl}`);
+    } catch (navError) {
+      console.log(`⚠️  Navigation timeout, trying with domcontentloaded...`);
+      try {
+        // Fallback: try with less strict waiting condition
+        await page.goto(irUrl, {
+          waitUntil: "domcontentloaded",
+          timeout: 90000,
+        });
+        console.log(`✅ Successfully navigated to: ${irUrl} (fallback)`);
+      } catch (fallbackError) {
+        console.error(`❌ Navigation failed completely:`, fallbackError);
+        throw new Error(`Failed to navigate to ${irUrl}: ${fallbackError}`);
+      }
+    }
 
     // Wait a bit for any dynamic content to load
     console.log(`⏳ Waiting for dynamic content to load...`);
@@ -511,11 +525,26 @@ export async function scrapeAndDownloadReports(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
           );
 
-          // Navigate to iframe source
-          await iframePage.goto(iframe.src, {
-            waitUntil: "networkidle0",
-            timeout: 45000,
-          });
+          // Navigate to iframe source with error handling
+          try {
+            await iframePage.goto(iframe.src, {
+              waitUntil: "networkidle0",
+              timeout: 90000,
+            });
+          } catch (iframeNavError) {
+            console.log(
+              `⚠️  Iframe navigation timeout, trying domcontentloaded...`
+            );
+            try {
+              await iframePage.goto(iframe.src, {
+                waitUntil: "domcontentloaded",
+                timeout: 60000,
+              });
+            } catch (iframeFallbackError) {
+              console.log(`❌ Failed to load iframe: ${iframe.src}`);
+              throw iframeFallbackError;
+            }
+          }
 
           // Wait longer for dynamic content to load
           await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -725,7 +754,7 @@ export async function scrapeAndDownloadReports(
         // Go back to main page
         await page.goto(irUrl, {
           waitUntil: "networkidle2",
-          timeout: 60000,
+          timeout: 120000,
         });
 
         await new Promise((resolve) => setTimeout(resolve, 3000));

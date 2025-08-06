@@ -8,7 +8,13 @@
     "test:parser": "ts-node src/tests/test-parser.ts",
     "debug:parser": "ts-node src/debug/debug-parser.ts",
     "debug:pdf": "ts-node src/debug/debug-pdf.ts",
-    "test:single-pdf": "ts-node src/tests/test-single-pdf.ts"
+    "test:all": "ts-node test/test-all.ts",
+    "test:download:novonordisk": "ts-node test/download/test-novonordisk.ts",
+    "test:download:stellantis": "ts-node test/download/test-stellantis.ts",
+    "test:download:sanofi": "ts-node test/download/test-sanofi.ts",
+    "test:parse:novonordisk": "ts-node test/parse/test-novonordisk.ts",
+    "test:parse:stellantis": "ts-node test/parse/test-stellantis.ts",
+    "test:parse:sanofi": "ts-node test/parse/test-sanofi.ts"
   },
   "dependencies": {
     "@types/pdf-parse": "^1.1.5",

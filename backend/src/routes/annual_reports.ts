@@ -4,25 +4,28 @@ import { scrapeAndDownloadReports } from "../services/reportProcessor";
 const router = Router();
 
 /**
- * POST /api/download/annual_report
- * Request body: { ir_url: string }
+ * POST /api/annual_reports
+ * Request body: { companyName: string, irUrl: string }
  * Scrapes and downloads annual reports for the last 10 years (max)
  */
-router.post("/annual_report", async (req, res) => {
-  const { ir_url } = req.body;
+router.post("/", async (req, res) => {
+  const { companyName, irUrl } = req.body;
 
-  if (!ir_url) {
-    return res.status(400).json({ error: "Missing ir_url in request body" });
+  if (!companyName || !irUrl) {
+    return res.status(400).json({ 
+      error: "Missing companyName or irUrl in request body",
+      example: { companyName: "novonordisk", irUrl: "https://..." }
+    });
   }
 
-  if (!ir_url.startsWith("http")) {
+  if (!irUrl.startsWith("http")) {
     return res.status(400).json({ error: "Invalid URL format" });
   }
 
   try {
-    console.log(`🚀 Starting report download for: ${ir_url}`);
+    console.log(`🚀 Starting report download for: ${companyName} - ${irUrl}`);
 
-    const result = await scrapeAndDownloadReports(ir_url);
+    const result = await scrapeAndDownloadReports(irUrl);
 
     res.json({
       success: true,

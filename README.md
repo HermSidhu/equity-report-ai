@@ -77,11 +77,11 @@ The system extracts and normalizes the following statement types:
 
 ### API Endpoints
 
-#### Download Service
+#### Annual Report Service
 
-- `POST /api/download/annual_report` - Scrape and download annual reports from company IR website
-  - Body: `{ "ir_url": "https://company-investor-relations-url" }`
-  - Returns: Download summary with company name, file count, and years processed
+- `POST /api/annual_reports/download` - Scrape and download annual reports from company IR website
+  - Body: `{ "ir_url": "https://company-ir-website.com" }`
+  - Downloads last 10 years of annual reports automatically
 
 #### Parsing Service
 
@@ -138,6 +138,10 @@ equity-report-ai/
 │   │   ├── types/              # TypeScript interfaces (financial.ts)
 │   │   ├── tests/              # Test scripts for debugging
 │   │   └── index.ts            # Server entry point
+│   ├── test/                   # API endpoint tests
+│   │   ├── download/           # Download endpoint tests by company
+│   │   ├── parse/              # Parse endpoint tests by company
+│   │   └── test-all.ts         # Comprehensive test runner
 │   ├── storage/                # Data storage directories
 │   │   ├── annual_reports/     # Downloaded PDF files by company
 │   │   ├── parsed_data/        # Individual year JSON extracts
@@ -201,11 +205,21 @@ For debugging and testing:
 # Test the financial parser on a specific company
 cd backend && npm run test:parser -- company-name
 
-# Test parsing a single PDF file
-cd backend && npm run test:single-pdf -- storage/annual_reports/company/report.pdf 2023
-
 # Check parser service status
 curl http://localhost:5050/api/parse/status
+
+# Run comprehensive API tests for all companies
+cd backend && npm run test:all
+
+# Test individual company downloads
+cd backend && npm run test:download:novonordisk
+cd backend && npm run test:download:stellantis
+cd backend && npm run test:download:sanofi
+
+# Test individual company parsing
+cd backend && npm run test:parse:novonordisk
+cd backend && npm run test:parse:stellantis
+cd backend && npm run test:parse:sanofi
 ```
 
 ### 4. Production Build
@@ -220,9 +234,9 @@ cd backend && npm run build
 
 ## API Endpoints
 
-### Download Service
+### Annual Report Service
 
-- `POST /api/download/annual_report` - Scrape and download annual reports from company IR website
+- `POST /api/annual_reports/download` - Scrape and download annual reports from company IR website
   - Body: `{ "ir_url": "https://company-investor-relations-url" }`
   - Returns: Download summary with company name, file count, and years processed
 
@@ -245,7 +259,7 @@ cd backend && npm run build
 
 ```bash
 # 1. Download annual reports for a company
-curl -X POST http://localhost:5050/api/download/annual_report \
+curl -X POST http://localhost:5050/api/annual_report/download \
   -H "Content-Type: application/json" \
   -d '{"ir_url": "https://company-ir-website.com"}'
 
@@ -260,6 +274,24 @@ curl http://localhost:5050/api/parse/companies
 # 4. Check service status
 curl http://localhost:5050/api/parse/status
 ```
+
+### Example Companies
+
+The system has been tested with the following companies:
+
+1. **Novo Nordisk**
+
+   - IR URL: https://www.novonordisk.com/sustainable-business/esg-portal/integrated-reporting.html
+   - Company Code: `novonordisk`
+
+2. **Stellantis**
+
+   - IR URL: https://www.stellantis.com/en/investors/reporting/financial-reports
+   - Company Code: `stellantis`
+
+3. **Sanofi**
+   - IR URL: https://www.sanofi.com/en/investors/financial-reports-and-regulated-information
+   - Company Code: `sanofi`
 
 ## Deployment
 
