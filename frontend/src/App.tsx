@@ -22,6 +22,15 @@ import {
   ScrollArea,
   Tabs,
 } from "@mantine/core";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { Notifications, notifications } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -32,7 +41,6 @@ import {
   IconCheck,
 } from "@tabler/icons-react";
 
-// import { ProgressTracker } from "@/components/ProgressTracker";
 import { downloadCSVFile } from "@/utils/api";
 import { COMPANIES } from "../companies";
 
@@ -81,14 +89,102 @@ function MainApp() {
 
   const companies = COMPANIES;
 
-  // Helper function to render financial data as table
+  // Helper function to create chart data for multiple metrics
+  const createMultiMetricChartData = (
+    data: Record<string, Record<string, number | string>>,
+    metrics: string[],
+    years: number[]
+  ) => {
+    return years
+      .map((year) => {
+        const dataPoint: {
+          year: string;
+          [key: string]: string | number | null;
+        } = {
+          year: year.toString(),
+        };
+
+        let hasAnyData = false;
+
+        metrics.forEach((metric) => {
+          const value = data[metric]?.[year.toString()];
+          let numericValue: number | null = null;
+
+          if (
+            typeof value === "string" &&
+            value !== "N/A" &&
+            value.trim() !== ""
+          ) {
+            const parsed = parseFloat(value.replace(/,/g, ""));
+            if (!isNaN(parsed)) {
+              numericValue = parsed;
+              hasAnyData = true;
+            }
+          } else if (typeof value === "number" && !isNaN(value)) {
+            numericValue = value;
+            hasAnyData = true;
+          }
+
+          dataPoint[metric] = numericValue;
+        });
+
+        return hasAnyData ? dataPoint : null;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  };
+
+  // Helper function to create chart data
+  const createChartData = (
+    data: Record<string, Record<string, number | string>>,
+    metric: string,
+    years: number[]
+  ) => {
+    const chartData = years
+      .map((year) => {
+        const value = data[metric]?.[year.toString()];
+        let numericValue: number | null = null;
+
+        if (
+          typeof value === "string" &&
+          value !== "N/A" &&
+          value.trim() !== ""
+        ) {
+          const parsed = parseFloat(value.replace(/,/g, ""));
+          if (!isNaN(parsed)) {
+            numericValue = parsed;
+          }
+        } else if (typeof value === "number" && !isNaN(value)) {
+          numericValue = value;
+        }
+
+        return numericValue !== null
+          ? {
+              year: year.toString(),
+              value: numericValue,
+            }
+          : null;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    return chartData;
+  };
+
+  // Helper function to render financial data as table with chart
   const renderFinancialTable = (
     title: string,
     data: Record<string, Record<string, number | string>>,
-    years: number[]
+    years: number[],
+    chartMetric?: string,
+    multiMetricChart?: { metrics: string[]; colors: string[] }
   ) => {
     const metrics = Object.keys(data);
     if (metrics.length === 0) return null;
+
+    const chartData = multiMetricChart
+      ? createMultiMetricChartData(data, multiMetricChart.metrics, years)
+      : chartMetric
+      ? createChartData(data, chartMetric, years)
+      : [];
 
     return (
       <Card withBorder padding="lg" mt="md">
@@ -110,9 +206,17 @@ function MainApp() {
             <Table.Tbody>
               {metrics.map((metric) => {
                 const isTotal = metric.toLowerCase().includes("total");
+                const isNetIncome = metric.toLowerCase() === "net income";
+                const isNetChangeInCash =
+                  metric.toLowerCase() === "net change in cash";
+                const shouldBeBold =
+                  isTotal || isNetIncome || isNetChangeInCash;
+
                 return (
                   <Table.Tr key={metric}>
-                    <Table.Td style={{ fontWeight: isTotal ? "bold" : 500 }}>
+                    <Table.Td
+                      style={{ fontWeight: shouldBeBold ? "bold" : 500 }}
+                    >
                       {metric}
                     </Table.Td>
                     {years.map((year) => {
@@ -138,7 +242,7 @@ function MainApp() {
                           key={year}
                           style={{
                             textAlign: "right",
-                            fontWeight: isTotal ? "bold" : "normal",
+                            fontWeight: shouldBeBold ? "bold" : "normal",
                           }}
                         >
                           {displayValue || "N/A"}
@@ -151,6 +255,72 @@ function MainApp() {
             </Table.Tbody>
           </Table>
         </ScrollArea>
+
+        {/* Chart Section */}
+        {((chartMetric && chartData.length > 0) ||
+          (multiMetricChart && chartData.length > 0)) && (
+          <Box mt="xl">
+            <Title order={5} mb="md">
+              {multiMetricChart
+                ? `${multiMetricChart.metrics.join(" vs ")} Trend`
+                : `${chartMetric} Trend`}
+            </Title>
+            <Box style={{ width: "100%", height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="year" />
+                  <YAxis
+                    tickFormatter={(value) =>
+                      value >= 1000
+                        ? `${(value / 1000).toFixed(1)}B`
+                        : value >= 1
+                        ? `${value.toFixed(0)}M`
+                        : value.toFixed(2)
+                    }
+                  />
+                  <RechartsTooltip
+                    formatter={(value: number, name: string) => [
+                      `${value.toLocaleString("en-US")} million`,
+                      name,
+                    ]}
+                    labelFormatter={(label) => `Year: ${label}`}
+                  />
+                  {multiMetricChart ? (
+                    multiMetricChart.metrics.map((metric, index) => (
+                      <Line
+                        key={metric}
+                        type="monotone"
+                        dataKey={metric}
+                        stroke={multiMetricChart.colors[index]}
+                        strokeWidth={2}
+                        dot={{
+                          fill: multiMetricChart.colors[index],
+                          strokeWidth: 2,
+                          r: 4,
+                        }}
+                        activeDot={{
+                          r: 6,
+                          stroke: multiMetricChart.colors[index],
+                          strokeWidth: 2,
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#1c7ed6"
+                      strokeWidth={2}
+                      dot={{ fill: "#1c7ed6", strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: "#1c7ed6", strokeWidth: 2 }}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
+        )}
       </Card>
     );
   };
@@ -702,7 +872,8 @@ function MainApp() {
                               {renderFinancialTable(
                                 "Income Statement",
                                 consolidatedData.incomeStatement || {},
-                                consolidatedData.years || []
+                                consolidatedData.years || [],
+                                "Net Income"
                               )}
                             </Tabs.Panel>
 
@@ -710,7 +881,16 @@ function MainApp() {
                               {renderFinancialTable(
                                 "Balance Sheet",
                                 consolidatedData.balanceSheet || {},
-                                consolidatedData.years || []
+                                consolidatedData.years || [],
+                                undefined,
+                                {
+                                  metrics: [
+                                    "Total Assets",
+                                    "Total Liabilities",
+                                    "Total Equity",
+                                  ],
+                                  colors: ["#28a745", "#dc3545", "#1c7ed6"], // Green for assets, red for liabilities, blue for equity
+                                }
                               )}
                             </Tabs.Panel>
 
@@ -718,7 +898,8 @@ function MainApp() {
                               {renderFinancialTable(
                                 "Cash Flow Statement",
                                 consolidatedData.cashFlow || {},
-                                consolidatedData.years || []
+                                consolidatedData.years || [],
+                                "Net Change in Cash"
                               )}
                             </Tabs.Panel>
                           </Tabs>
