@@ -12,15 +12,11 @@
 
 ### Application Dashboard
 
-![Application Dashboard](./frontend/screenshots/Screenshot%202025-08-06%20at%208.10.53%20AM.png)
+<img width="1574" height="682" alt="Screenshot 2025-08-06 at 8 11 42 AM" src="https://github.com/user-attachments/assets/8bc78083-b0e6-426c-97da-f8187c290dd6" />
 
-### Financial Data Visualization
+<img width="1577" height="660" alt="Screenshot 2025-08-06 at 8 11 14 AM" src="https://github.com/user-attachments/assets/6f6e6965-df60-42a6-a16a-fb0d2b0bf33d" />
 
-![Financial Data Visualization](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.14%20AM.png)
-
-### Company Analysis Interface
-
-![Company Analysis Interface](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.42%20AM.png)
+<img width="1584" height="688" alt="Screenshot 2025-08-06 at 8 10 53 AM" src="https://github.com/user-attachments/assets/079f624c-047f-4968-8b5b-2c48495be3b4" />
 
 </div>
 
