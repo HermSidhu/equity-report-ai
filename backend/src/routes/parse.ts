@@ -201,4 +201,99 @@ router.get("/companies", (req, res) => {
   }
 });
 
+/**
+ * POST /api/parse/:companyId
+ * Alternative endpoint with companyId as URL parameter
+ * Parses financial statements from downloaded PDFs
+ */
+router.post("/:companyId", async (req, res) => {
+  const { companyId } = req.params;
+
+  if (!companyId) {
+    return res.status(400).json({
+      error: "Missing companyId parameter in URL",
+      example: "/api/parse/novonordisk",
+    });
+  }
+
+  if (typeof companyId !== "string" || !/^[a-zA-Z0-9_-]+$/.test(companyId)) {
+    return res.status(400).json({
+      error:
+        "Invalid company code. Use alphanumeric characters, hyphens, and underscores only.",
+      example: "/api/parse/novo-nordisk",
+    });
+  }
+
+  try {
+    console.log(`🚀 Starting financial statement parsing for: ${companyId}`);
+
+    const result: ParsedFinancialStatements = await parseFinancialStatements(
+      companyId
+    );
+
+    res.json({
+      success: true,
+      message: "Financial statements parsed successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("❌ Parsing failed:", error);
+
+    // Handle specific error types
+    if (error.message.includes("not found")) {
+      return res.status(404).json({
+        success: false,
+        error: "Company reports not found",
+        details: error.message,
+        suggestion: "Download annual reports first using /api/annual_reports",
+      });
+    }
+
+    if (error.message.includes("Failed to parse any PDF files")) {
+      return res.status(422).json({
+        success: false,
+        error: "Unable to parse any PDF files",
+        details: error.message,
+        suggestion:
+          "Check if PDFs are valid and contain financial statements. AI parsing may have failed.",
+      });
+    }
+
+    if (error.code === "ENOENT") {
+      return res.status(404).json({
+        success: false,
+        error: "Annual reports directory not found",
+        details: `No reports found for company: ${companyId}`,
+        suggestion: "Download annual reports first using /api/annual_reports",
+      });
+    }
+
+    // OpenAI API errors
+    if (error.status === 401) {
+      return res.status(500).json({
+        success: false,
+        error: "AI service authentication failed",
+        details: "Invalid OpenAI API key",
+        suggestion: "Check your OPENAI_API_KEY environment variable",
+      });
+    }
+
+    if (error.status === 429) {
+      return res.status(429).json({
+        success: false,
+        error: "AI service rate limit exceeded",
+        details: "Too many requests to OpenAI API",
+        suggestion: "Wait a few minutes and try again",
+      });
+    }
+
+    // General server error
+    res.status(500).json({
+      success: false,
+      error: "Parsing failed",
+      details: error.message,
+    });
+  }
+});
+
 export default router;
