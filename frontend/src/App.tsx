@@ -73,7 +73,6 @@ function MainApp() {
   const [selectedCompany, setSelectedCompany] = useState<
     (typeof COMPANIES)[number] | null
   >(null);
-  const [activeTab, setActiveTab] = useState<"process" | "data">("process");
   const [downloadProgress, setDownloadProgress] = useState<{
     [key: string]: DownloadProgress;
   }>({});
@@ -99,7 +98,7 @@ function MainApp() {
     return (
       <Card withBorder padding="lg" mt="md">
         <Title order={4} mb="md">
-          {title}
+          {title} (in millions)
         </Title>
         <ScrollArea>
           <Table striped highlightOnHover withTableBorder withColumnBorders>
@@ -114,21 +113,46 @@ function MainApp() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {metrics.map((metric) => (
-                <Table.Tr key={metric}>
-                  <Table.Td style={{ fontWeight: 500 }}>{metric}</Table.Td>
-                  {years.map((year) => {
-                    const value = data[metric]?.[year.toString()];
-                    return (
-                      <Table.Td key={year} style={{ textAlign: "right" }}>
-                        {typeof value === "number"
-                          ? value.toLocaleString()
-                          : value || "N/A"}
-                      </Table.Td>
-                    );
-                  })}
-                </Table.Tr>
-              ))}
+              {metrics.map((metric) => {
+                const isTotal = metric.toLowerCase().includes("total");
+                return (
+                  <Table.Tr key={metric}>
+                    <Table.Td style={{ fontWeight: isTotal ? "bold" : 500 }}>
+                      {metric}
+                    </Table.Td>
+                    {years.map((year) => {
+                      const value = data[metric]?.[year.toString()];
+                      let displayValue = value;
+
+                      // Handle numeric values - keep in millions and format with commas
+                      if (
+                        typeof value === "string" &&
+                        value !== "N/A" &&
+                        !isNaN(parseFloat(value.replace(/,/g, "")))
+                      ) {
+                        const numericValue = parseFloat(
+                          value.replace(/,/g, "")
+                        );
+                        displayValue = numericValue.toLocaleString("en-US");
+                      } else if (typeof value === "number") {
+                        displayValue = value.toLocaleString("en-US");
+                      }
+
+                      return (
+                        <Table.Td
+                          key={year}
+                          style={{
+                            textAlign: "right",
+                            fontWeight: isTotal ? "bold" : "normal",
+                          }}
+                        >
+                          {displayValue || "N/A"}
+                        </Table.Td>
+                      );
+                    })}
+                  </Table.Tr>
+                );
+              })}
             </Table.Tbody>
           </Table>
         </ScrollArea>
@@ -158,20 +182,12 @@ function MainApp() {
     }
   };
 
-  // Effect to fetch files when company is selected and auto-switch to data tab if available
+  // Effect to fetch files when company is selected
   useEffect(() => {
     if (selectedCompany) {
       fetchDownloadedFiles(selectedCompany.id);
-
-      // Check if consolidated data is available and switch to data tab
-      if (consolidatedData && !dataLoading) {
-        setActiveTab("data");
-      } else {
-        // Default to process tab if no data available
-        setActiveTab("process");
-      }
     }
-  }, [selectedCompany, consolidatedData, dataLoading]);
+  }, [selectedCompany]);
 
   const handleDownloadAndParse = async (
     company: (typeof COMPANIES)[number]
@@ -296,9 +312,8 @@ function MainApp() {
         icon: <IconCheck size={16} />,
       });
 
-      // Wait a moment then switch to data view
+      // Wait a moment then refresh data
       setTimeout(() => {
-        setActiveTab("data");
         setDownloadProgress((prev) => ({
           ...prev,
           [company.id]: {
@@ -440,30 +455,6 @@ function MainApp() {
                 </Card>
               ))}
             </Stack>
-
-            <Title order={4} mt="md">
-              Actions
-            </Title>
-
-            <Stack gap="xs">
-              <Button
-                variant={activeTab === "process" ? "filled" : "light"}
-                leftSection={<IconDownload size={16} />}
-                onClick={() => setActiveTab("process")}
-                size="sm"
-              >
-                Download & Parse Annual Reports
-              </Button>
-              <Button
-                variant={activeTab === "data" ? "filled" : "light"}
-                leftSection={<IconTable size={16} />}
-                onClick={() => setActiveTab("data")}
-                size="sm"
-                disabled={!selectedCompany}
-              >
-                View Data
-              </Button>
-            </Stack>
           </Stack>
         </AppShell.Navbar>
 
@@ -498,71 +489,45 @@ function MainApp() {
                   </Box>
                 </Group>
 
-                {/* Process Tab - Combined Download & Parse */}
-                {activeTab === "process" && (
-                  <Stack gap="md">
-                    <Card withBorder padding="lg">
-                      <Stack gap="md">
-                        <Group justify="space-between" align="center">
-                          <Box>
-                            <Title order={3}>
-                              Download & Parse Annual Reports
-                            </Title>
-                            <Text size="sm" c="dimmed" mt={4}>
-                              Download annual reports and extract financial data
-                              using AI in one step
-                            </Text>
-                          </Box>
-                          <Button
-                            onClick={() =>
-                              handleDownloadAndParse(selectedCompany)
-                            }
-                            loading={
-                              downloadProgress[selectedCompany.id]
-                                ?.isProcessing || false
-                            }
-                            leftSection={<IconDownload size={16} />}
-                            size="sm"
-                          >
-                            Download & Parse
-                          </Button>
-                        </Group>
+                {/* Combined View - Download & Parse + Financial Data */}
+                <Stack gap="md">
+                  {/* Download & Parse Section */}
+                  <Card withBorder padding="lg">
+                    <Stack gap="md">
+                      <Group justify="space-between" align="center">
+                        <Box>
+                          <Title order={3}>
+                            Download & Parse Annual Reports
+                          </Title>
+                          <Text size="sm" c="dimmed" mt={4}>
+                            Download annual reports and extract financial data
+                            using AI in one step
+                          </Text>
+                        </Box>
+                        <Button
+                          onClick={() =>
+                            handleDownloadAndParse(selectedCompany)
+                          }
+                          loading={
+                            downloadProgress[selectedCompany.id]
+                              ?.isProcessing || false
+                          }
+                          leftSection={<IconDownload size={16} />}
+                          size="sm"
+                        >
+                          Download & Parse
+                        </Button>
+                      </Group>
 
-                        {downloadProgress[selectedCompany.id]?.isProcessing && (
-                          <Box>
-                            <Group justify="space-between" mb="xs">
-                              <Text size="sm">
-                                {downloadProgress[selectedCompany.id]?.status ||
-                                  "Processing..."}
-                              </Text>
-                              <Badge
-                                variant="light"
-                                color={
-                                  downloadProgress[selectedCompany.id]
-                                    ?.stage === "download"
-                                    ? "blue"
-                                    : downloadProgress[selectedCompany.id]
-                                        ?.stage === "parse"
-                                    ? "orange"
-                                    : "green"
-                                }
-                                size="sm"
-                              >
-                                {downloadProgress[selectedCompany.id]?.stage ===
-                                "download"
-                                  ? "Downloading"
-                                  : downloadProgress[selectedCompany.id]
-                                      ?.stage === "parse"
-                                  ? "Parsing"
-                                  : "Complete"}
-                              </Badge>
-                            </Group>
-                            <Progress
-                              value={
-                                downloadProgress[selectedCompany.id]
-                                  ?.progress || 0
-                              }
-                              animated
+                      {downloadProgress[selectedCompany.id]?.isProcessing && (
+                        <Box>
+                          <Group justify="space-between" mb="xs">
+                            <Text size="sm">
+                              {downloadProgress[selectedCompany.id]?.status ||
+                                "Processing..."}
+                            </Text>
+                            <Badge
+                              variant="light"
                               color={
                                 downloadProgress[selectedCompany.id]?.stage ===
                                 "download"
@@ -572,185 +537,211 @@ function MainApp() {
                                   ? "orange"
                                   : "green"
                               }
-                            />
-                            <Text size="xs" c="dimmed" mt="xs">
+                              size="sm"
+                            >
                               {downloadProgress[selectedCompany.id]?.stage ===
                               "download"
-                                ? "Downloading reports from investor relations page..."
+                                ? "Downloading"
                                 : downloadProgress[selectedCompany.id]
                                     ?.stage === "parse"
-                                ? "AI is analyzing PDF reports and extracting financial data..."
-                                : "Processing complete! Financial data will be available shortly."}
-                            </Text>
-                          </Box>
-                        )}
-
-                        <Alert color="blue" variant="light">
-                          <Text size="sm">
-                            <strong>Source:</strong> {selectedCompany.irUrl}
-                          </Text>
-                        </Alert>
-                      </Stack>
-                    </Card>
-
-                    {/* Downloaded Files */}
-                    <Accordion
-                      variant="contained"
-                      defaultValue="downloaded-reports"
-                    >
-                      <Accordion.Item value="downloaded-reports">
-                        <Accordion.Control>
-                          <Group justify="space-between" mr="xl">
-                            <Text fw={500}>Reports Downloaded</Text>
-                            <Badge variant="light" color="green" size="sm">
-                              {downloadedFiles[selectedCompany.id]?.length || 0}{" "}
-                              files
+                                ? "Parsing"
+                                : "Complete"}
                             </Badge>
                           </Group>
-                        </Accordion.Control>
-                        <Accordion.Panel>
-                          {downloadedFiles[selectedCompany.id]?.length > 0 ? (
-                            <Stack gap="xs">
-                              {downloadedFiles[selectedCompany.id].map(
-                                (file, index) => (
-                                  <Card
-                                    key={index}
-                                    withBorder
-                                    padding="sm"
-                                    radius="md"
-                                  >
-                                    <Group justify="space-between">
-                                      <Group>
-                                        <ThemeIcon
-                                          color="green"
-                                          size={32}
-                                          radius="xl"
-                                        >
-                                          <IconCheck size={16} />
-                                        </ThemeIcon>
-                                        <Box>
-                                          <Text size="sm" fw={500}>
-                                            {file.filename}
-                                          </Text>
-                                          <Text size="xs" c="dimmed">
-                                            {file.year &&
-                                              `Year: ${file.year} • `}
-                                            Size:{" "}
-                                            {(file.size / 1024 / 1024).toFixed(
-                                              1
-                                            )}{" "}
-                                            MB • Downloaded & Parsed:{" "}
-                                            {new Date(
-                                              file.downloadedAt
-                                            ).toLocaleDateString()}
-                                          </Text>
-                                        </Box>
-                                      </Group>
-                                      <Badge
-                                        variant="light"
-                                        size="xs"
-                                        color="green"
-                                      >
-                                        {file.year || "Unknown Year"}
-                                      </Badge>
-                                    </Group>
-                                  </Card>
-                                )
-                              )}
-                            </Stack>
-                          ) : (
-                            <Alert
-                              icon={<IconAlertCircle size={16} />}
-                              title="No Reports Processed"
-                              color="yellow"
-                            >
-                              Click "Download & Parse" above to download and
-                              process annual reports for {selectedCompany.name}.
-                            </Alert>
-                          )}
-                        </Accordion.Panel>
-                      </Accordion.Item>
-                    </Accordion>
-                  </Stack>
-                )}
+                          <Progress
+                            value={
+                              downloadProgress[selectedCompany.id]?.progress ||
+                              0
+                            }
+                            animated
+                            color={
+                              downloadProgress[selectedCompany.id]?.stage ===
+                              "download"
+                                ? "blue"
+                                : downloadProgress[selectedCompany.id]
+                                    ?.stage === "parse"
+                                ? "orange"
+                                : "green"
+                            }
+                          />
+                          <Text size="xs" c="dimmed" mt="xs">
+                            {downloadProgress[selectedCompany.id]?.stage ===
+                            "download"
+                              ? "Downloading reports from investor relations page..."
+                              : downloadProgress[selectedCompany.id]?.stage ===
+                                "parse"
+                              ? "AI is analyzing PDF reports and extracting financial data..."
+                              : "Processing complete! Financial data will be available shortly."}
+                          </Text>
+                        </Box>
+                      )}
 
-                {/* Data Tab */}
-                {activeTab === "data" && (
-                  <Stack gap="md">
-                    <Group justify="space-between">
-                      <Title order={3}>Financial Data</Title>
-                      <Button
-                        onClick={() => handleDownloadCSV(selectedCompany.id)}
-                        variant="light"
-                        size="sm"
-                        leftSection={<IconDownload size={16} />}
-                      >
-                        Download CSV
-                      </Button>
-                    </Group>
-
-                    {dataLoading ? (
-                      <Group justify="center" py="xl">
-                        <Loader />
-                        <Text>Loading financial data...</Text>
-                      </Group>
-                    ) : consolidatedData ? (
-                      <Stack gap="md">
-                        <Alert
-                          icon={<IconCheck size={16} />}
-                          title="Data Loaded Successfully"
-                          color="green"
-                        >
-                          Financial data loaded for {selectedCompany.name} •{" "}
-                          {consolidatedData.years?.length || 0} years of data
-                          available
-                        </Alert>
-
-                        <Tabs defaultValue="income" variant="outline">
-                          <Tabs.List grow>
-                            <Tabs.Tab value="income">Income Statement</Tabs.Tab>
-                            <Tabs.Tab value="balance">Balance Sheet</Tabs.Tab>
-                            <Tabs.Tab value="cashflow">Cash Flow</Tabs.Tab>
-                          </Tabs.List>
-
-                          <Tabs.Panel value="income">
-                            {renderFinancialTable(
-                              "Income Statement",
-                              consolidatedData.incomeStatement || {},
-                              consolidatedData.years || []
-                            )}
-                          </Tabs.Panel>
-
-                          <Tabs.Panel value="balance">
-                            {renderFinancialTable(
-                              "Balance Sheet",
-                              consolidatedData.balanceSheet || {},
-                              consolidatedData.years || []
-                            )}
-                          </Tabs.Panel>
-
-                          <Tabs.Panel value="cashflow">
-                            {renderFinancialTable(
-                              "Cash Flow Statement",
-                              consolidatedData.cashFlow || {},
-                              consolidatedData.years || []
-                            )}
-                          </Tabs.Panel>
-                        </Tabs>
-                      </Stack>
-                    ) : (
-                      <Alert
-                        icon={<IconAlertCircle size={16} />}
-                        title="No Data Available"
-                        color="yellow"
-                      >
-                        Financial data is not yet available for{" "}
-                        {selectedCompany.name}. Please ensure the reports have
-                        been downloaded and parsed first.
+                      <Alert color="blue" variant="light">
+                        <Text size="sm">
+                          <strong>Source:</strong> {selectedCompany.irUrl}
+                        </Text>
                       </Alert>
-                    )}
-                  </Stack>
-                )}
+                    </Stack>
+                  </Card>
+
+                  {/* Downloaded Files */}
+                  <Accordion
+                    variant="contained"
+                    defaultValue="downloaded-reports"
+                  >
+                    <Accordion.Item value="downloaded-reports">
+                      <Accordion.Control>
+                        <Group justify="space-between" mr="xl">
+                          <Text fw={500}>Reports Downloaded</Text>
+                          <Badge variant="light" color="green" size="sm">
+                            {downloadedFiles[selectedCompany.id]?.length || 0}{" "}
+                            files
+                          </Badge>
+                        </Group>
+                      </Accordion.Control>
+                      <Accordion.Panel>
+                        {downloadedFiles[selectedCompany.id]?.length > 0 ? (
+                          <Stack gap="xs">
+                            {downloadedFiles[selectedCompany.id].map(
+                              (file, index) => (
+                                <Card
+                                  key={index}
+                                  withBorder
+                                  padding="sm"
+                                  radius="md"
+                                >
+                                  <Group justify="space-between">
+                                    <Group>
+                                      <ThemeIcon
+                                        color="green"
+                                        size={32}
+                                        radius="xl"
+                                      >
+                                        <IconCheck size={16} />
+                                      </ThemeIcon>
+                                      <Box>
+                                        <Text size="sm" fw={500}>
+                                          {file.filename}
+                                        </Text>
+                                        <Text size="xs" c="dimmed">
+                                          {file.year && `Year: ${file.year} • `}
+                                          Size:{" "}
+                                          {(file.size / 1024 / 1024).toFixed(
+                                            1
+                                          )}{" "}
+                                          MB • Downloaded & Parsed:{" "}
+                                          {new Date(
+                                            file.downloadedAt
+                                          ).toLocaleDateString()}
+                                        </Text>
+                                      </Box>
+                                    </Group>
+                                    <Badge
+                                      variant="light"
+                                      size="xs"
+                                      color="green"
+                                    >
+                                      {file.year || "Unknown Year"}
+                                    </Badge>
+                                  </Group>
+                                </Card>
+                              )
+                            )}
+                          </Stack>
+                        ) : (
+                          <Alert
+                            icon={<IconAlertCircle size={16} />}
+                            title="No Reports Processed"
+                            color="yellow"
+                          >
+                            Click "Download & Parse" above to download and
+                            process annual reports for {selectedCompany.name}.
+                          </Alert>
+                        )}
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion>
+
+                  {/* Financial Data Section */}
+                  <Card withBorder padding="lg">
+                    <Stack gap="md">
+                      <Group justify="space-between">
+                        <Title order={3}>Financial Data</Title>
+                        <Button
+                          onClick={() => handleDownloadCSV(selectedCompany.id)}
+                          variant="light"
+                          size="sm"
+                          leftSection={<IconDownload size={16} />}
+                        >
+                          Download CSV
+                        </Button>
+                      </Group>
+
+                      {dataLoading ? (
+                        <Group justify="center" py="xl">
+                          <Loader />
+                          <Text>Loading financial data...</Text>
+                        </Group>
+                      ) : consolidatedData ? (
+                        <Stack gap="md">
+                          <Alert
+                            icon={<IconCheck size={16} />}
+                            title="Data Loaded Successfully"
+                            color="green"
+                          >
+                            Financial data loaded for {selectedCompany.name} •{" "}
+                            {consolidatedData.years?.length || 0} years of data
+                            available
+                          </Alert>
+
+                          <Tabs defaultValue="income" variant="outline">
+                            <Tabs.List grow>
+                              <Tabs.Tab value="income">
+                                Income Statement
+                              </Tabs.Tab>
+                              <Tabs.Tab value="balance">Balance Sheet</Tabs.Tab>
+                              <Tabs.Tab value="cashflow">Cash Flow</Tabs.Tab>
+                            </Tabs.List>
+
+                            <Tabs.Panel value="income">
+                              {renderFinancialTable(
+                                "Income Statement",
+                                consolidatedData.incomeStatement || {},
+                                consolidatedData.years || []
+                              )}
+                            </Tabs.Panel>
+
+                            <Tabs.Panel value="balance">
+                              {renderFinancialTable(
+                                "Balance Sheet",
+                                consolidatedData.balanceSheet || {},
+                                consolidatedData.years || []
+                              )}
+                            </Tabs.Panel>
+
+                            <Tabs.Panel value="cashflow">
+                              {renderFinancialTable(
+                                "Cash Flow Statement",
+                                consolidatedData.cashFlow || {},
+                                consolidatedData.years || []
+                              )}
+                            </Tabs.Panel>
+                          </Tabs>
+                        </Stack>
+                      ) : (
+                        <Alert
+                          icon={<IconAlertCircle size={16} />}
+                          title="No Data Available"
+                          color="yellow"
+                        >
+                          Financial data is not yet available for{" "}
+                          {selectedCompany.name}. Please ensure the reports have
+                          been downloaded and parsed first.
+                        </Alert>
+                      )}
+                    </Stack>
+                  </Card>
+                </Stack>
               </Stack>
             )}
           </Container>

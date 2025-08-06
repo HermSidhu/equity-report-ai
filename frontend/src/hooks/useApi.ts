@@ -105,12 +105,10 @@ export const useConsolidatedData = (companyId: string, enabled = true) => {
   return useQuery<ConsolidatedData>({
     queryKey: ["consolidatedData", companyId],
     queryFn: async () => {
-      // Try to get the compiled data - this would need a new endpoint
-      // For now, we'll create a mock structure based on our JSON files
-      const response = await api.get(`/csv/preview/${companyId}?limit=1000`);
-      const preview = response.data.preview;
+      const response = await api.get(`/compiled_data/${companyId}`);
+      const compiledData = response.data.data;
 
-      // Convert CSV preview to our ConsolidatedData format
+      // Convert compiled JSON to our ConsolidatedData format
       const consolidated: ConsolidatedData = {
         incomeStatement: {},
         balanceSheet: {},
@@ -118,47 +116,54 @@ export const useConsolidatedData = (companyId: string, enabled = true) => {
         years: [],
       };
 
-      // Parse the preview data to build our structure
-      if (preview && preview.data) {
-        const years = new Set<number>();
+      if (compiledData && compiledData.statements) {
+        // Get years from metadata or extract from statements
+        consolidated.years =
+          compiledData.metadata?.years_covered?.map((y: string) =>
+            parseInt(y)
+          ) || [];
 
-        // Extract years from headers first
-        preview.headers.forEach((header: string) => {
-          const year = parseInt(header);
-          if (!isNaN(year) && year >= 2000) {
-            years.add(year);
-          }
-        });
-        consolidated.years = Array.from(years).sort((a, b) => b - a);
-
-        preview.data.forEach((row: any) => {
-          const statement = row.Statement;
-          const item = row.Item;
-
-          if (statement && item) {
-            let targetStatement;
-            if (statement.includes("Income")) {
-              targetStatement = consolidated.incomeStatement;
-            } else if (statement.includes("Balance")) {
-              targetStatement = consolidated.balanceSheet;
-            } else if (statement.includes("Cash")) {
-              targetStatement = consolidated.cashFlow;
-            }
-
-            if (targetStatement) {
-              if (!targetStatement[item]) {
-                targetStatement[item] = {};
+        // Transform income statement from year-first to metric-first structure
+        if (compiledData.statements.income_statement) {
+          const incomeByYear = compiledData.statements.income_statement;
+          for (const year in incomeByYear) {
+            const yearData = incomeByYear[year];
+            for (const metric in yearData) {
+              if (!consolidated.incomeStatement[metric]) {
+                consolidated.incomeStatement[metric] = {};
               }
-
-              consolidated.years.forEach((year) => {
-                const value = row[year.toString()];
-                if (value && value !== "N/A") {
-                  targetStatement[item][year] = value;
-                }
-              });
+              consolidated.incomeStatement[metric][year] = yearData[metric];
             }
           }
-        });
+        }
+
+        // Transform balance sheet from year-first to metric-first structure
+        if (compiledData.statements.balance_sheet) {
+          const balanceByYear = compiledData.statements.balance_sheet;
+          for (const year in balanceByYear) {
+            const yearData = balanceByYear[year];
+            for (const metric in yearData) {
+              if (!consolidated.balanceSheet[metric]) {
+                consolidated.balanceSheet[metric] = {};
+              }
+              consolidated.balanceSheet[metric][year] = yearData[metric];
+            }
+          }
+        }
+
+        // Transform cash flow from year-first to metric-first structure
+        if (compiledData.statements.cash_flow) {
+          const cashFlowByYear = compiledData.statements.cash_flow;
+          for (const year in cashFlowByYear) {
+            const yearData = cashFlowByYear[year];
+            for (const metric in yearData) {
+              if (!consolidated.cashFlow[metric]) {
+                consolidated.cashFlow[metric] = {};
+              }
+              consolidated.cashFlow[metric][year] = yearData[metric];
+            }
+          }
+        }
       }
 
       return consolidated;
