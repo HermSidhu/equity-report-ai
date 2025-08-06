@@ -1,35 +1,4 @@
-# 🚀 AI Eq- 🎨 **Modern In## 📸 Sc- 📊 **Data Visualization\*\*: Multi-metric line charts with customizable colors and proper N/A data handling
-
-- 📥 **Flexible Data Export**: Export to CSV, JSON, or comparative analysis formats
-- 🔧 **Production-Ready**: Comprehensive error handling, status tracking, and deployment configuration
-- ⚡ **Real-time Progress**: Live updates during scraping and parsing operations with detailed progress indicators
-- 🌐 **Deployed & Accessible**: Full production deployment on Cloudflare Pages (frontend) and Render (backend)
-- 📋 **Postman Collection**: Complete API documentation and testing suite included
-
-## 📸 Screenshotss
-
-<div align="center">
-
-### Application Dashboard
-
-<img width="1574" height="682" alt="Screenshot 2025-08-06 at 8 11 42 AM" src="https://github.com/user-attachments/assets/8bc78083-b0e6-426c-97da-f8187c290dd6" />
-
-<img width="1577" height="660" alt="Screenshot 2025-08-06 at 8 11 14 AM" src="https://github.com/user-attachments/assets/6f6e6965-df60-42a6-a16a-fb0d2b0bf33d" />
-
-<img width="1584" height="688" alt="Screenshot 2025-08-06 at 8 10 53 AM" src="https://github.com/user-attachments/assets/079f624c-047f-4968-8b5b-2c48495be3b4" />
-
-</div>
-
-## 🛠️ Tech Stackan interface built with Mantine v7 components, React Query for state management, and interactive Recharts visualizations
-
-- 📊 **Data Visualization**: Multi-metric line charts with customizable colors and proper N/A data handling
-- 📥 **Flexible Data Export**: Export to CSV, JSON, or comparative analysis formats
-- 🔧 **Production-Ready**: Comprehensive error handling, status tracking, and deployment configuration
-- ⚡ **Real-time Progress**: Live updates during scraping and parsing operations with detailed progress indicators
-- 🌐 **Deployed & Accessible**: Full production deployment on Cloudflare Pages (frontend) and Render (backend)
-- 📋 **Postman Collection**: Complete API documentation and testing suite included
-
-## 📸 Screenshotsal Report Compiler
+# 🚀 AI Equity Report Compiler
 
 A full-stack TypeScript application that automatically scrapes, parses, and compiles companies' annual reports into clean, consolidated financial statements. **Live Demo:** [Frontend](https://equity-report-ai.pages.dev) | [Backend API](https://equity-report-ai.onrender.com)
 
@@ -40,40 +9,28 @@ A full-stack TypeScript application that automatically scrapes, parses, and comp
 - 📊 **Financial Statement Extraction**: Automated extraction of Income Statement, Balance Sheet, and Cash Flow statements
 - 📈 **Multi-Year Data Consolidation**: Processes and consolidates up to 10 years of financial data with intelligent deduplication
 - 🎨 **Modern Interactive UI**: Clean interface built with Mantine v7 components, React Query for state management, and interactive Recharts visualizations
-- � **Data Visualization**: Multi-metric line charts with customizable colors and proper N/A data handling
+- 📊 **Data Visualization**: Multi-metric line charts with customizable colors and proper N/A data handling
 - 📥 **Flexible Data Export**: Export to CSV, JSON, or comparative analysis formats
 - 🔧 **Production-Ready**: Comprehensive error handling, status tracking, and deployment configuration
 - ⚡ **Real-time Progress**: Live updates during scraping and parsing operations with detailed progress indicators
 - 🌐 **Deployed & Accessible**: Full production deployment on Cloudflare Pages (frontend) and Render (backend)
 - 📋 **Postman Collection**: Complete API documentation and testing suite included
 
-## � Screenshots
+## 📸 Screenshots
 
 <div align="center">
 
 ### Application Dashboard
 
-![Application Dashboard](./frontend/screenshots/Screenshot%202025-08-06%20at%208.10.53%20AM.png)
+<img width="1574" height="682" alt="Screenshot 2025-08-06 at 8 11 42 AM" src="https://github.com/user-attachments/assets/8bc78083-b0e6-426c-97da-f8187c290dd6" />
 
-### Financial Data Visualization
+<img width="1577" height="660" alt="Screenshot 2025-08-06 at 8 11 14 AM" src="https://github.com/user-attachments/assets/6f6e6965-df60-42a6-a16a-fb0d2b0bf33d" />
 
-![Financial Data Visualization](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.14%20AM.png)
-
-### Company Analysis Interface
-
-![Company Analysis Interface](./frontend/screenshots/Screenshot%202025-08-06%20at%208.11.42%20AM.png)
+<img width="1584" height="688" alt="Screenshot 2025-08-06 at 8 10 53 AM" src="https://github.com/user-attachments/assets/079f624c-047f-4968-8b5b-2c48495be3b4" />
 
 </div>
 
-![Financial Data Visualization](frontend/screenshots/Screenshot%202025-08-06%20at%208.11.14%20AM.png)
-
-### Company Analysis Interface
-
-![Company Analysis Interface](frontend/screenshots/Screenshot%202025-08-06%20at%208.11.42%20AM.png)
-
-</div>
-
-## �🛠️ Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend
 
@@ -209,50 +166,92 @@ backend/storage/
 
 ```
 equity-report-ai/
+├── .gitignore                  # Git ignore patterns
 ├── README.md                   # Comprehensive project documentation
 ├── render.yaml                 # Production deployment configuration
 ├── Equity_Report_AI_Backend.postman_collection.json  # Complete API documentation
 ├── frontend/                   # React + Vite frontend application
-│   ├── src/
-│   │   ├── hooks/              # Custom React hooks
-│   │   │   └── useApi.ts               # TanStack Query API integration
-│   │   ├── types/              # TypeScript type definitions
-│   │   │   └── index.ts                # API response and data types
-│   │   ├── utils/              # Utility functions
-│   │   │   └── api.ts                  # API client configuration
-│   │   ├── constants/          # Application constants
-│   │   │   └── companies.ts            # Company configurations (3 test companies)
-│   │   ├── App.tsx             # Main application component
-│   │   └── main.tsx            # Application entry point
-│   ├── package.json            # Dependencies and scripts
+│   ├── .env                    # Environment variables
+│   ├── companies.ts            # Company configurations (3 test companies)
+│   ├── index.html              # HTML entry point
+│   ├── package.json            # Frontend dependencies and scripts
+│   ├── package-lock.json       # Locked dependency versions
+│   ├── postcss.config.cjs      # PostCSS configuration
+│   ├── tsconfig.json           # TypeScript configuration
+│   ├── tsconfig.node.json      # Node-specific TypeScript config
 │   ├── vite.config.ts          # Vite build configuration
-│   └── index.html              # HTML entry point
-├── backend/                    # Express.js + TypeScript API server
-│   ├── src/
-│   │   ├── routes/             # API endpoint definitions
-│   │   │   ├── annual_reports.ts       # Annual report scraping endpoints
-│   │   │   ├── parse.ts                # AI parsing service endpoints
-│   │   │   ├── csv.ts                  # CSV export functionality
-│   │   │   └── compiled_data.ts        # Consolidated data endpoints
-│   │   ├── services/           # Business logic services
-│   │   │   ├── parser.ts               # AI-powered financial parser
-│   │   │   └── reportProcessor.ts      # PDF processing and data extraction
-│   │   ├── types/              # TypeScript interfaces
-│   │   │   └── financial.ts            # Financial data type definitions
-│   │   ├── tests/              # Test suites
-│   │   └── index.ts            # Main server entry point
-│   ├── storage/                # Data storage hierarchy
-│   │   ├── annual_reports/     # Raw downloaded PDF files
-│   │   │   ├── novonordisk/            # Company-specific folders
-│   │   │   ├── sanofi/
-│   │   │   └── stellantis/
-│   │   ├── parsed_data/        # AI-extracted JSON data
-│   │   │   └── novonordisk/            # Year-by-year parsed data
-│   │   ├── compiled_data/      # Consolidated multi-year data
-│   │   └── csv/                # Generated export files
-│   ├── temp/                   # Temporary processing files
-│   ├── package.json            # Node.js dependencies with postinstall Chrome setup
-│   └── tsconfig.json           # TypeScript configuration
+│   ├── dist/                   # Built production files
+│   ├── screenshots/            # Application screenshots
+│   │   ├── Screenshot 2025-08-06 at 8.10.53 AM.png
+│   │   ├── Screenshot 2025-08-06 at 8.11.14 AM.png
+│   │   └── Screenshot 2025-08-06 at 8.11.42 AM.png
+│   └── src/
+│       ├── App.tsx             # Main application component
+│       ├── main.tsx            # Application entry point
+│       ├── vite-env.d.ts       # Vite environment types
+│       ├── hooks/              # Custom React hooks
+│       │   └── useApi.ts       # TanStack Query API integration
+│       ├── types/              # TypeScript type definitions
+│       │   └── index.ts        # API response and data types
+│       └── utils/              # Utility functions
+│           └── api.ts          # API client configuration
+└── backend/                    # Express.js + TypeScript API server
+    ├── .env                    # Environment variables (not in repo)
+    ├── .env.example            # Environment variables template
+    ├── package.json            # Backend dependencies and scripts
+    ├── package-lock.json       # Locked dependency versions
+    ├── tsconfig.json           # TypeScript configuration
+    ├── dist/                   # Compiled JavaScript output
+    ├── src/
+    │   ├── index.ts            # Main server entry point
+    │   ├── routes/             # API endpoint definitions
+    │   │   ├── annual_reports.ts       # Annual report scraping endpoints
+    │   │   ├── compiled_data.ts        # Consolidated data endpoints
+    │   │   ├── csv.ts                  # CSV export functionality
+    │   │   └── parse.ts                # AI parsing service endpoints
+    │   ├── services/           # Business logic services
+    │   │   ├── csvExporter.ts          # CSV generation service
+    │   │   ├── parser.ts               # AI-powered financial parser
+    │   │   └── reportProcessor.ts      # PDF processing and data extraction
+    │   └── types/              # TypeScript interfaces
+    │       └── financial.ts            # Financial data type definitions
+    ├── storage/                # Data storage hierarchy
+    │   ├── annual_reports/     # Raw downloaded PDF files
+    │   │   ├── novonordisk/    # 2015-2024 annual reports (10 PDFs)
+    │   │   ├── sanofi/         # 2015-2024 annual reports (10 PDFs)
+    │   │   └── stellantis/     # 2020-2024 annual reports (5 PDFs)
+    │   ├── parsed_data/        # AI-extracted JSON data by year
+    │   │   ├── novonordisk/    # Individual year JSON files
+    │   │   ├── sanofi/         # Individual year JSON files
+    │   │   └── stellantis/     # Individual year JSON files
+    │   ├── compiled_data/      # Consolidated multi-year data
+    │   │   ├── novonordisk.json
+    │   │   ├── sanofi.json
+    │   │   └── stellantis.json
+    │   └── csv/                # Generated export files
+    │       ├── comparison_novonordisk_sanofi_stellantis_test.csv
+    │       └── novonordisk_test.csv
+    └── test/                   # Test suites and scripts
+        ├── test-all.js         # Comprehensive test runner (JS)
+        ├── test-all.ts         # Comprehensive test runner (TS)
+        ├── annual_reports/     # Annual report download tests
+        │   ├── test-novonordisk.js
+        │   ├── test-novonordisk.ts
+        │   ├── test-sanofi.js
+        │   ├── test-sanofi.ts
+        │   ├── test-stellantis.js
+        │   └── test-stellantis.ts
+        ├── csv/                # CSV export tests
+        │   ├── test-csv.js
+        │   └── test-csv.ts
+        ├── download/           # Download functionality tests
+        └── parse/              # Parsing functionality tests
+            ├── test-novonordisk.js
+            ├── test-novonordisk.ts
+            ├── test-sanofi.js
+            ├── test-sanofi.ts
+            ├── test-stellantis.js
+            └── test-stellantis.ts
 ```
 
 ## 🌐 Enhanced Frontend Features
@@ -295,8 +294,6 @@ equity-report-ai/
 - **API Documentation**: Comprehensive Postman collection with 20+ endpoints, examples, and automated testing
 - **Environment Management**: Proper separation of development and production configurations with secure API key handling
 
-````
-
 ## ⚡ Quick Start Guide
 
 ### Prerequisites
@@ -313,10 +310,9 @@ Create environment files for local development:
 PORT=5050
 OPENAI_API_KEY=your_openai_api_key_here
 NODE_ENV=development
-````
+```
 
 **Frontend (.env):**
-
 ```env
 VITE_API_URL=http://localhost:5050
 ```
@@ -389,112 +385,6 @@ Import the comprehensive Postman collection for complete API testing:
 - **Type-Safe APIs**: Generated TypeScript types from backend schemas
 - **Modern React**: React 18 with Suspense, concurrent features, and error boundaries
 - **Design System**: Mantine v7 with consistent theming and component patterns
-
-### 3. Development
-
-Start the development servers:
-
-```bash
-# Backend only
-cd backend && npm run dev
-# Backend runs on http://localhost:5050
-
-# Frontend only (in a new terminal)
-cd frontend && npm run dev
-# Frontend runs on http://localhost:5173
-```
-
-For debugging and testing:
-
-```bash
-# Test the financial parser on a specific company
-cd backend && npm run test:parser -- company-name
-
-# Check parser service status
-curl http://localhost:5050/api/parse/status
-
-# Run comprehensive API tests for all companies
-cd backend && npm run test:all
-
-# Test individual company annual report downloads
-cd backend && npm run test:annual_reports:novonordisk
-cd backend && npm run test:annual_reports:stellantis
-cd backend && npm run test:annual_reports:sanofi
-
-# Test individual company parsing
-cd backend && npm run test:parse:novonordisk
-cd backend && npm run test:parse:stellantis
-cd backend && npm run test:parse:sanofi
-
-# Test CSV export functionality
-cd backend && npm run test:csv
-```
-
-### 4. Production Build
-
-````bash
-# Build frontend
-## 🏗️ Technical Architecture Deep Dive
-
-### Data Flow Pipeline
-
-```mermaid
-graph TD
-    A[Company IR Website] --> B[Puppeteer Scraper]
-    B --> C[PDF Downloads]
-    C --> D[PDF Text Extraction]
-    D --> E[OpenAI GPT-4o Analysis]
-    E --> F[Data Normalization]
-    F --> G[JSON Storage]
-    G --> H[Frontend Visualization]
-    G --> I[CSV Export]
-````
-
-### Storage Architecture
-
-```
-backend/storage/
-├── annual_reports/           # Raw PDF files (input)
-│   ├── novonordisk/
-│   │   ├── 2023_annual_report.pdf
-│   │   ├── 2022_annual_report.pdf
-│   │   └── 2021_annual_report.pdf
-├── parsed_data/             # Year-by-year extracts (intermediate)
-│   └── novonordisk/
-│       ├── 2023.json
-│       ├── 2022.json
-│       └── 2021.json
-├── compiled_data/           # Consolidated multi-year (final)
-│   └── novonordisk.json
-└── csv/                     # Export formats
-    ├── novonordisk_test.csv
-    └── comparison_analysis.csv
-```
-
-### AI Processing Pipeline
-
-1. **PDF Text Extraction**: Advanced pdf-parse with 100K character limits
-2. **Financial Statement Detection**: Pattern matching for IS/BS/CF sections
-3. **OpenAI GPT-4o Analysis**: Structured prompts with financial terminology
-4. **Data Validation**: Numerical consistency and completeness checks
-5. **Multi-Year Consolidation**: Intelligent merging with conflict resolution
-6. **JSON Normalization**: Standardized financial statement schemas
-
-### Production Optimizations
-
-#### Backend (Render.com)
-
-- **Chrome Installation**: Automated Chromium setup via postinstall script
-- **Environment Variables**: Secure API key management and URL configuration
-- **Error Recovery**: Comprehensive logging with graceful degradation
-- **Resource Management**: Optimized memory usage for PDF processing
-
-#### Frontend (Cloudflare Pages)
-
-- **Code Splitting**: Vite-powered dynamic imports for optimal loading
-- **CDN Distribution**: Global edge caching for sub-second response times
-- **Build Optimization**: Tree shaking, minification, and asset compression
-- **Environment Injection**: Build-time variable replacement for API endpoints
 
 ## 🛠️ Development Workflow
 
@@ -631,111 +521,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 _Built with ❤️ using React, TypeScript, OpenAI GPT-4o, and modern web technologies_
-
-- `GET /api/csv/download/:company` - Download CSV file for a specific company
-- `GET /api/csv/preview/:company?limit=50` - Preview CSV structure without downloading (JSON format)
-- `POST /api/csv/compare` - Generate comparative CSV for multiple companies
-  - Body: `{ "companies": ["company1", "company2", ...] }`
-
-## Usage
-
-1. **Download Reports**: Provide a company's investor relations URL to automatically scrape and download annual report PDFs
-2. **Parse Financials**: Use AI to extract structured financial data from downloaded PDFs
-3. **View Consolidated Data**: Browse multi-year financial statements with normalized line items
-4. **Export Data**: Download processed financial data in JSON format
-
-### Example API Usage
-
-```bash
-# 1. Download annual reports for a company
-curl -X POST http://localhost:5050/api/annual_report/download \
-  -H "Content-Type: application/json" \
-  -d '{"ir_url": "https://company-ir-website.com"}'
-
-# 2. Parse the downloaded PDFs
-curl -X POST http://localhost:5050/api/parse \
-  -H "Content-Type: application/json" \
-  -d '{"company": "company-folder-name"}'
-
-# 3. Check available companies
-curl http://localhost:5050/api/parse/companies
-
-# 4. Check service status
-curl http://localhost:5050/api/parse/status
-
-# 5. Download CSV for a company
-curl http://localhost:5050/api/csv/download/novonordisk -o novonordisk_financials.csv
-
-# 6. Preview CSV structure
-curl http://localhost:5050/api/csv/preview/novonordisk?limit=10
-
-# 7. Generate comparative CSV for multiple companies
-curl -X POST http://localhost:5050/api/csv/compare \
-  -H "Content-Type: application/json" \
-  -d '{"companies": ["novonordisk", "stellantis"]}' \
-  -o financial_comparison.csv
-
-# 8. List companies available for CSV export
-curl http://localhost:5050/api/csv/companies
-```
-
-### Example Companies
-
-The system has been tested with the following companies:
-
-1. **Novo Nordisk**
-
-   - IR URL: https://www.novonordisk.com/sustainable-business/esg-portal/integrated-reporting.html
-   - Company Code: `novonordisk`
-
-2. **Stellantis**
-
-   - IR URL: https://www.stellantis.com/en/investors/reporting/financial-reports
-   - Company Code: `stellantis`
-
-3. **Sanofi**
-   - IR URL: https://www.sanofi.com/en/investors/financial-reports-and-regulated-information
-   - Company Code: `sanofi`
-
-## Deployment
-
-### Backend (Production)
-
-```bash
-cd backend
-npm run build
-npm start
-```
-
-Set the following environment variables:
-
-- `PORT` - Server port (default: 5050)
-- `OPENAI_API_KEY` - Your OpenAI API key
-
-### Frontend (Production)
-
-```bash
-cd frontend
-npm run build
-npm run preview
-```
-
-Set the following environment variable:
-
-- `VITE_API_URL` - Backend API URL (e.g., https://your-backend.com)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues and questions, please open a GitHub issue.
