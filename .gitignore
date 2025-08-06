@@ -20,6 +20,9 @@ backend/storage/parsed_data/*/
 # Compiled data - exclude consolidated financial data
 backend/storage/compiled_data/*.json
 
+# CSV exports - exclude generated CSV files but keep directory and README
+backend/storage/csv/*.csv
+
 # Debug files and outputs
 backend/src/debug/
 

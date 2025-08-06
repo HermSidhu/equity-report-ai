@@ -97,8 +97,11 @@ The system extracts and normalizes the following statement types:
 backend/storage/
 ├── annual_reports/[company]/    # Raw downloaded PDF files organized by company
 ├── parsed_data/[company]/       # AI-extracted JSON data from each PDF (by year)
-└── compiled_data/               # Consolidated multi-year financial data
-    └── [company].json          # Final normalized financial statements
+├── compiled_data/               # Consolidated multi-year financial data
+│   └── [company].json          # Final normalized financial statements
+└── csv/                        # Generated CSV exports
+    ├── [company]_test.csv      # Individual company test exports
+    └── comparison_*.csv        # Multi-company comparison files
 ```
 
 ### Error Handling & Status Tracking
@@ -211,15 +214,18 @@ curl http://localhost:5050/api/parse/status
 # Run comprehensive API tests for all companies
 cd backend && npm run test:all
 
-# Test individual company downloads
-cd backend && npm run test:download:novonordisk
-cd backend && npm run test:download:stellantis
-cd backend && npm run test:download:sanofi
+# Test individual company annual report downloads
+cd backend && npm run test:annual_reports:novonordisk
+cd backend && npm run test:annual_reports:stellantis
+cd backend && npm run test:annual_reports:sanofi
 
 # Test individual company parsing
 cd backend && npm run test:parse:novonordisk
 cd backend && npm run test:parse:stellantis
 cd backend && npm run test:parse:sanofi
+
+# Test CSV export functionality
+cd backend && npm run test:csv
 ```
 
 ### 4. Production Build
@@ -248,6 +254,14 @@ cd backend && npm run build
 - `GET /api/parse/status` - Check parsing service health and configuration
 - `GET /api/parse/companies` - List available, parsed, and compiled companies
 
+### CSV Export Service
+
+- `GET /api/csv/companies` - List all companies available for CSV export
+- `GET /api/csv/download/:company` - Download CSV file for a specific company
+- `GET /api/csv/preview/:company?limit=50` - Preview CSV structure without downloading (JSON format)
+- `POST /api/csv/compare` - Generate comparative CSV for multiple companies
+  - Body: `{ "companies": ["company1", "company2", ...] }`
+
 ## Usage
 
 1. **Download Reports**: Provide a company's investor relations URL to automatically scrape and download annual report PDFs
@@ -273,6 +287,21 @@ curl http://localhost:5050/api/parse/companies
 
 # 4. Check service status
 curl http://localhost:5050/api/parse/status
+
+# 5. Download CSV for a company
+curl http://localhost:5050/api/csv/download/novonordisk -o novonordisk_financials.csv
+
+# 6. Preview CSV structure
+curl http://localhost:5050/api/csv/preview/novonordisk?limit=10
+
+# 7. Generate comparative CSV for multiple companies
+curl -X POST http://localhost:5050/api/csv/compare \
+  -H "Content-Type: application/json" \
+  -d '{"companies": ["novonordisk", "stellantis"]}' \
+  -o financial_comparison.csv
+
+# 8. List companies available for CSV export
+curl http://localhost:5050/api/csv/companies
 ```
 
 ### Example Companies
