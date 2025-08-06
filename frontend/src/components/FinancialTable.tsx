@@ -7,7 +7,6 @@ import {
   Text,
   Badge,
   Group,
-  NumberFormatter,
 } from "@mantine/core";
 import { ConsolidatedData } from "@/types";
 

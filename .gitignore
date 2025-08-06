@@ -52,6 +52,14 @@ jspm_packages/
 # TypeScript cache
 *.tsbuildinfo
 
+# TypeScript compiled output - ignore .js files created alongside .ts files
+backend/src/**/*.js
+backend/src/**/*.js.map
+backend/test/**/*.js
+backend/test/**/*.js.map
+frontend/src/**/*.js
+frontend/src/**/*.js.map
+
 # Optional npm cache directory
 .npm
 

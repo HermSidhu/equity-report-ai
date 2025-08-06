@@ -1,47 +1,41 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   MantineProvider,
   AppShell,
   Title,
   Text,
   Container,
-  Grid,
   Button,
   Group,
   Stack,
-  LoadingOverlay,
   Alert,
   ActionIcon,
   Tooltip,
+  Card,
+  Badge,
+  Progress,
+  Box,
+  Loader,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   IconDownload,
-  IconRefresh,
   IconChartBar,
   IconBrandGithub,
   IconSun,
   IconMoon,
+  IconFileText,
+  IconTable,
+  IconAlertCircle,
 } from "@tabler/icons-react";
 import { useLocalStorage, useColorScheme } from "@mantine/hooks";
 
-import { CompanyCard } from "@/components/CompanyCard";
-import { ProgressTracker } from "@/components/ProgressTracker";
-import { ConsolidatedView } from "@/components/FinancialTable";
+// import { ProgressTracker } from "@/components/ProgressTracker";
+import { downloadCSVFile, downloadComparativeCSV } from "@/utils/api";
+import { COMPANIES } from "../companies";
 
-import {
-  useCompanies,
-  useScrapeCompany,
-  useScrapeStatus,
-  useParseCompany,
-  useParseStatus,
-  useAggregateCompany,
-  useConsolidatedData,
-  useDownloadData,
-} from "@/hooks/useApi";
-
-import { Company } from "@/types";
+import { useConsolidatedData } from "@/hooks/useApi";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -54,10 +48,18 @@ const queryClient = new QueryClient({
 });
 
 function MainApp() {
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
-  const [currentStage, setCurrentStage] = useState<
-    "idle" | "scraping" | "parsing" | "aggregating" | "completed"
-  >("idle");
+  const [selectedCompany, setSelectedCompany] = useState<
+    (typeof COMPANIES)[number] | null
+  >(null);
+  const [activeTab, setActiveTab] = useState<"download" | "parse" | "data">(
+    "download"
+  );
+  const [downloadProgress, setDownloadProgress] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [parseProgress, setParseProgress] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const preferredColorScheme = useColorScheme();
   const [colorScheme, setColorScheme] = useLocalStorage({
@@ -66,104 +68,108 @@ function MainApp() {
     getInitialValueInEffect: true,
   });
 
-  // API hooks
-  const { data: companiesResponse, isLoading: loadingCompanies } =
-    useCompanies();
-  const scrapeCompanyMutation = useScrapeCompany();
-  const parseCompanyMutation = useParseCompany();
-  const aggregateCompanyMutation = useAggregateCompany();
-  const downloadMutation = useDownloadData();
-
-  // Status tracking
-  const { data: scrapeStatus } = useScrapeStatus(
-    selectedCompany?.id || "",
-    currentStage === "scraping"
-  );
-
-  const { data: parseStatus } = useParseStatus(
-    selectedCompany?.id || "",
-    currentStage === "parsing"
-  );
-
-  // Consolidated data
-  const { data: consolidatedResponse, refetch: refetchData } =
+  // API hooks - only using consolidated data query
+  const { data: consolidatedData, isLoading: dataLoading } =
     useConsolidatedData(
       selectedCompany?.id || "",
-      currentStage === "completed"
+      !!selectedCompany && activeTab === "data"
     );
 
-  const companies = companiesResponse?.data || [];
-  const consolidatedData = consolidatedResponse?.data;
+  const companies = COMPANIES;
 
-  const handleCompanySelect = (company: Company) => {
-    setSelectedCompany(company);
-    setCurrentStage("idle");
-  };
-
-  const handleStartProcess = async () => {
-    if (!selectedCompany) return;
-
+  const handleDownload = async (company: (typeof COMPANIES)[number]) => {
+    setDownloadProgress((prev) => ({ ...prev, [company.id]: true }));
     try {
-      // Start scraping
-      setCurrentStage("scraping");
-      await scrapeCompanyMutation.mutateAsync(selectedCompany.id);
+      const response = await fetch("/api/annual_reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          companyName: company.id,
+          irUrl: company.irUrl,
+        }),
+      });
 
-      // Wait for scraping to complete, then start parsing
-      const waitForScraping = () => {
-        const interval = setInterval(() => {
-          if (scrapeStatus?.data?.stage === "completed") {
-            clearInterval(interval);
-            setCurrentStage("parsing");
-            parseCompanyMutation.mutate(selectedCompany.id);
-          } else if (scrapeStatus?.data?.stage === "error") {
-            clearInterval(interval);
-            setCurrentStage("idle");
-          }
-        }, 2000);
-      };
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
 
-      waitForScraping();
+      const result = await response.json();
+      console.log("Download successful:", result);
     } catch (error) {
-      setCurrentStage("idle");
+      console.error("Download failed:", error);
+    } finally {
+      setDownloadProgress((prev) => ({ ...prev, [company.id]: false }));
     }
   };
 
-  const handleStartAggregation = async () => {
-    if (!selectedCompany) return;
-
-    setCurrentStage("aggregating");
+  const handleParse = async (companyId: string) => {
+    setParseProgress((prev) => ({ ...prev, [companyId]: true }));
     try {
-      await aggregateCompanyMutation.mutateAsync(selectedCompany.id);
-      setCurrentStage("completed");
-      refetchData();
+      const response = await fetch(`/api/parse/${companyId}`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Parsing failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("Parsing successful:", result);
     } catch (error) {
-      setCurrentStage("idle");
+      console.error("Parsing failed:", error);
+    } finally {
+      setParseProgress((prev) => ({ ...prev, [companyId]: false }));
     }
   };
 
-  const handleDownload = (format: "csv" | "excel") => {
-    if (!selectedCompany) return;
+  const handleDownloadCSV = async (companyId: string) => {
+    try {
+      await downloadCSVFile(companyId);
+    } catch (error) {
+      console.error("CSV download failed:", error);
+    }
+  };
 
-    downloadMutation.mutate({
-      companyId: selectedCompany.id,
-      format,
-    });
+  const handleDownloadComparativeCSV = async () => {
+    try {
+      const companyIds = COMPANIES.map((c) => c.id);
+      await downloadComparativeCSV(companyIds);
+    } catch (error) {
+      console.error("Comparative CSV download failed:", error);
+    }
   };
 
   const toggleColorScheme = () => {
     setColorScheme(colorScheme === "dark" ? "light" : "dark");
   };
 
-  const isProcessing = ["scraping", "parsing", "aggregating"].includes(
-    currentStage
-  );
-  const currentProgress = scrapeStatus?.data || parseStatus?.data;
+  if (false) {
+    // Remove loading state since we're not using API
+    return (
+      <MantineProvider theme={{ primaryColor: "blue" }}>
+        <AppShell>
+          <Container size="lg" py="xl">
+            <Group justify="center">
+              <Loader />
+              <Text>Loading companies...</Text>
+            </Group>
+          </Container>
+        </AppShell>
+      </MantineProvider>
+    );
+  }
 
   return (
-    <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
+    <MantineProvider theme={{ primaryColor: "blue" }}>
       <Notifications />
 
-      <AppShell header={{ height: 70 }} padding="md">
+      <AppShell
+        header={{ height: 70 }}
+        navbar={{ width: 320, breakpoint: "sm" }}
+        padding="md"
+      >
         <AppShell.Header>
           <Container size="xl" h="100%">
             <Group justify="space-between" h="100%">
@@ -174,13 +180,16 @@ function MainApp() {
                     Equity Report AI
                   </Title>
                   <Text size="sm" c="dimmed">
-                    Automated financial statement extraction for publicly traded
-                    companies
+                    Automated financial statement extraction
                   </Text>
                 </div>
               </Group>
 
               <Group>
+                <Badge variant="light" color="green">
+                  {companies.length} Companies Available
+                </Badge>
+
                 <Tooltip label="Toggle theme">
                   <ActionIcon
                     variant="subtle"
@@ -211,122 +220,251 @@ function MainApp() {
           </Container>
         </AppShell.Header>
 
+        <AppShell.Navbar p="md">
+          <Stack gap="md">
+            <Title order={3}>Companies</Title>
+
+            <Stack gap="xs">
+              {companies.map((company) => (
+                <Card
+                  key={company.id}
+                  padding="sm"
+                  radius="md"
+                  withBorder
+                  style={{
+                    cursor: "pointer",
+                    backgroundColor:
+                      selectedCompany?.id === company.id
+                        ? "var(--mantine-color-blue-1)"
+                        : undefined,
+                  }}
+                  onClick={() => setSelectedCompany(company)}
+                >
+                  <Group justify="space-between">
+                    <Stack gap={2}>
+                      <Text fw={500} size="sm">
+                        {company.name}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {company.id}
+                      </Text>
+                    </Stack>
+                    <Badge variant="light" size="xs">
+                      {company.id.toUpperCase()}
+                    </Badge>
+                  </Group>
+                </Card>
+              ))}
+            </Stack>
+
+            <Title order={4} mt="md">
+              Actions
+            </Title>
+
+            <Stack gap="xs">
+              <Button
+                variant={activeTab === "download" ? "filled" : "light"}
+                leftSection={<IconDownload size={16} />}
+                onClick={() => setActiveTab("download")}
+                size="sm"
+              >
+                Download Reports
+              </Button>
+              <Button
+                variant={activeTab === "parse" ? "filled" : "light"}
+                leftSection={<IconFileText size={16} />}
+                onClick={() => setActiveTab("parse")}
+                size="sm"
+              >
+                Parse PDFs
+              </Button>
+              <Button
+                variant={activeTab === "data" ? "filled" : "light"}
+                leftSection={<IconTable size={16} />}
+                onClick={() => setActiveTab("data")}
+                size="sm"
+                disabled={!selectedCompany}
+              >
+                View Data
+              </Button>
+            </Stack>
+          </Stack>
+        </AppShell.Navbar>
+
         <AppShell.Main>
           <Container size="xl">
-            <LoadingOverlay visible={loadingCompanies} />
-
-            {/* Company Selection */}
-            <Stack gap="xl">
-              <div>
-                <Title order={2} mb="md">
-                  Select Company
-                </Title>
-                <Grid>
-                  {companies.map((company) => (
-                    <Grid.Col
-                      key={company.id}
-                      span={{ base: 12, md: 6, lg: 4 }}
-                    >
-                      <CompanyCard
-                        company={company}
-                        onSelect={handleCompanySelect}
-                        isSelected={selectedCompany?.id === company.id}
-                        disabled={isProcessing}
-                      />
-                    </Grid.Col>
-                  ))}
-                </Grid>
-              </div>
-
-              {/* Processing Controls */}
-              {selectedCompany && (
-                <div>
-                  <Title order={2} mb="md">
-                    Processing Pipeline
-                  </Title>
-
-                  <Group mb="md">
-                    <Button
-                      onClick={handleStartProcess}
-                      disabled={isProcessing}
-                      loading={currentStage === "scraping"}
-                      size="md"
-                    >
-                      Start Scraping & Parsing
-                    </Button>
-
-                    <Button
-                      onClick={handleStartAggregation}
-                      disabled={isProcessing || currentStage === "idle"}
-                      loading={currentStage === "aggregating"}
-                      variant="light"
-                      size="md"
-                    >
-                      Aggregate Data
-                    </Button>
-
-                    <Button
-                      onClick={() => refetchData()}
-                      variant="subtle"
-                      leftSection={<IconRefresh size={16} />}
-                      disabled={isProcessing}
-                    >
-                      Refresh
-                    </Button>
-                  </Group>
-
-                  {/* Progress Tracking */}
-                  {currentProgress && isProcessing && (
-                    <ProgressTracker
-                      progress={currentProgress}
-                      companyName={selectedCompany.name}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Results */}
-              {consolidatedData && currentStage === "completed" && (
-                <div>
-                  <Group justify="space-between" mb="md">
-                    <Title order={2}>Financial Statements</Title>
-                    <Group>
-                      <Button
-                        leftSection={<IconDownload size={16} />}
-                        onClick={() => handleDownload("csv")}
-                        variant="light"
-                        loading={downloadMutation.isPending}
-                      >
-                        Download CSV
-                      </Button>
-                      <Button
-                        leftSection={<IconDownload size={16} />}
-                        onClick={() => handleDownload("excel")}
-                        color="green"
-                        loading={downloadMutation.isPending}
-                      >
-                        Download Excel
-                      </Button>
+            {!selectedCompany ? (
+              <Alert
+                icon={<IconAlertCircle size={16} />}
+                title="Select a Company"
+                color="blue"
+              >
+                Choose a company from the sidebar to get started with
+                downloading reports, parsing data, or viewing financial
+                information.
+              </Alert>
+            ) : (
+              <Stack gap="xl">
+                <Group justify="space-between" align="flex-start">
+                  <Box>
+                    <Title order={2}>{selectedCompany.name}</Title>
+                    <Group gap="xs" mt="xs">
+                      <Badge variant="light">
+                        {selectedCompany.id.toUpperCase()}
+                      </Badge>
                     </Group>
-                  </Group>
+                  </Box>
+                </Group>
 
-                  <ConsolidatedView
-                    data={consolidatedData}
-                    companyName={selectedCompany?.name || ""}
-                  />
-                </div>
-              )}
+                {/* Download Tab */}
+                {activeTab === "download" && (
+                  <Card withBorder padding="lg">
+                    <Stack gap="md">
+                      <Group justify="space-between" align="center">
+                        <Box>
+                          <Title order={3}>Download Annual Reports</Title>
+                          <Text size="sm" c="dimmed" mt={4}>
+                            Download the latest annual reports from the
+                            company's investor relations page
+                          </Text>
+                        </Box>
+                        <Button
+                          onClick={() => handleDownload(selectedCompany)}
+                          loading={downloadProgress[selectedCompany.id]}
+                          leftSection={<IconDownload size={16} />}
+                          size="sm"
+                        >
+                          Start Download
+                        </Button>
+                      </Group>
 
-              {/* Error States */}
-              {currentStage === "idle" &&
-                selectedCompany &&
-                !consolidatedData && (
-                  <Alert color="blue" title="Ready to process">
-                    Click "Start Scraping & Parsing" to begin extracting
-                    financial data for {selectedCompany.name}.
-                  </Alert>
+                      {downloadProgress[selectedCompany.id] && (
+                        <Box>
+                          <Text size="sm" mb="xs">
+                            Downloading reports...
+                          </Text>
+                          <Progress value={50} animated />
+                          <Text size="xs" c="dimmed" mt="xs">
+                            This may take several minutes depending on the
+                            number and size of reports
+                          </Text>
+                        </Box>
+                      )}
+
+                      <Alert color="blue" variant="light">
+                        <Text size="sm">
+                          <strong>Source:</strong> {selectedCompany.irUrl}
+                        </Text>
+                      </Alert>
+                    </Stack>
+                  </Card>
                 )}
-            </Stack>
+
+                {/* Parse Tab */}
+                {activeTab === "parse" && (
+                  <Card withBorder padding="lg">
+                    <Stack gap="md">
+                      <Group justify="space-between" align="center">
+                        <Box>
+                          <Title order={3}>Parse PDF Reports</Title>
+                          <Text size="sm" c="dimmed" mt={4}>
+                            Extract financial data from downloaded PDF reports
+                            using AI
+                          </Text>
+                        </Box>
+                        <Button
+                          onClick={() => handleParse(selectedCompany.id)}
+                          loading={parseProgress[selectedCompany.id]}
+                          leftSection={<IconFileText size={16} />}
+                          size="sm"
+                        >
+                          Start Parsing
+                        </Button>
+                      </Group>
+
+                      {parseProgress[selectedCompany.id] && (
+                        <Box>
+                          <Text size="sm" mb="xs">
+                            Parsing PDFs with AI...
+                          </Text>
+                          <Progress value={30} animated />
+                          <Text size="xs" c="dimmed" mt="xs">
+                            AI is analyzing the reports to extract financial
+                            statements
+                          </Text>
+                        </Box>
+                      )}
+
+                      <Alert color="yellow" variant="light">
+                        <Text size="sm">
+                          Ensure reports have been downloaded before starting
+                          the parsing process.
+                        </Text>
+                      </Alert>
+                    </Stack>
+                  </Card>
+                )}
+
+                {/* Data Tab */}
+                {activeTab === "data" && (
+                  <Stack gap="md">
+                    <Group justify="space-between">
+                      <Title order={3}>Financial Data</Title>
+                      <Group>
+                        <Button
+                          onClick={() => handleDownloadCSV(selectedCompany.id)}
+                          variant="light"
+                          size="sm"
+                          leftSection={<IconDownload size={16} />}
+                        >
+                          Download CSV
+                        </Button>
+                        <Button
+                          onClick={handleDownloadComparativeCSV}
+                          variant="outline"
+                          size="sm"
+                          leftSection={<IconTable size={16} />}
+                        >
+                          Compare All
+                        </Button>
+                      </Group>
+                    </Group>
+
+                    {dataLoading ? (
+                      <Group justify="center" py="xl">
+                        <Loader />
+                        <Text>Loading financial data...</Text>
+                      </Group>
+                    ) : consolidatedData ? (
+                      <Card withBorder padding="lg">
+                        <Text>
+                          Financial data loaded successfully for{" "}
+                          {selectedCompany.name}
+                        </Text>
+                        <Text size="sm" c="dimmed" mt="xs">
+                          Data structure:{" "}
+                          {JSON.stringify(
+                            Object.keys(consolidatedData),
+                            null,
+                            2
+                          )}
+                        </Text>
+                      </Card>
+                    ) : (
+                      <Alert
+                        icon={<IconAlertCircle size={16} />}
+                        title="No Data Available"
+                        color="yellow"
+                      >
+                        Financial data is not yet available for{" "}
+                        {selectedCompany.name}. Please ensure the reports have
+                        been downloaded and parsed first.
+                      </Alert>
+                    )}
+                  </Stack>
+                )}
+              </Stack>
+            )}
           </Container>
         </AppShell.Main>
       </AppShell>
