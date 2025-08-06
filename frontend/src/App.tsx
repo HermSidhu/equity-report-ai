@@ -96,10 +96,7 @@ function MainApp() {
 
   // API hooks - only using consolidated data query
   const { data: consolidatedData, isLoading: dataLoading } =
-    useConsolidatedData(
-      selectedCompany?.id || "",
-      !!selectedCompany && activeTab === "data"
-    );
+    useConsolidatedData(selectedCompany?.id || "", !!selectedCompany);
 
   const companies = COMPANIES;
 
@@ -174,12 +171,20 @@ function MainApp() {
     }
   };
 
-  // Effect to fetch files when company is selected
+  // Effect to fetch files when company is selected and auto-switch to data tab if available
   useEffect(() => {
     if (selectedCompany) {
       fetchDownloadedFiles(selectedCompany.id);
+
+      // Check if consolidated data is available and switch to data tab
+      if (consolidatedData && !dataLoading) {
+        setActiveTab("data");
+      } else {
+        // Default to download tab if no data available
+        setActiveTab("download");
+      }
     }
-  }, [selectedCompany]);
+  }, [selectedCompany, consolidatedData, dataLoading]);
 
   const handleDownload = async (company: (typeof COMPANIES)[number]) => {
     setDownloadProgress((prev) => ({
