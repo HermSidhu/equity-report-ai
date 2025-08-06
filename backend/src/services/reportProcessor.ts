@@ -439,7 +439,11 @@ export async function scrapeAndDownloadReports(
   console.log(`🔍 Scraping reports from: ${irUrl}`);
 
   const companyName = extractCompanyName(irUrl);
-  const downloadDir = path.join(__dirname, "../../annual_reports", companyName);
+  const downloadDir = path.join(
+    __dirname,
+    "../../storage/annual_reports",
+    companyName
+  );
 
   // Create download directory
   if (!fs.existsSync(downloadDir)) {

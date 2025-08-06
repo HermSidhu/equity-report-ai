@@ -1,3 +1,0 @@
-# This file ensures the directory structure is maintained in git
-# Normalized 10-year consolidated financial data will be stored here
-# Structure: compiled_data/company.json

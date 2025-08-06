@@ -4,13 +4,14 @@ A full-stack TypeScript application that automatically scrapes, parses, and comp
 
 ## Features
 
-- 🏢 Pre-configured companies (Novo Nordisk, Stellantis, Sanofi)
-- 🤖 AI-powered PDF classification and data normalization using OpenAI GPT-4
-- 📊 Automated extraction of Income Statement, Balance Sheet, and Cash Flow
-- 📈 10-year consolidated financial data views
-- 🎨 Modern UI with Mantine components and dark mode
-- 📱 Responsive design for all devices
-- 📥 Export capabilities (CSV/Excel)
+- 🔍 **Intelligent Web Scraping**: Automatically discovers and downloads annual report PDFs from company investor relations websites
+- 🤖 **AI-Powered PDF Parsing**: Uses OpenAI GPT-4o to extract and normalize financial data from complex PDF documents
+- 📊 **Financial Statement Extraction**: Automated extraction of Income Statement, Balance Sheet, and Cash Flow statements
+- 📈 **Multi-Year Data Consolidation**: Processes and consolidates up to 10 years of financial data
+- 🎨 **Modern UI**: Clean interface built with Mantine components and React Query for state management
+- 📥 **Data Export**: Access to structured financial data in JSON format
+- 🔧 **Robust Error Handling**: Comprehensive error handling and status tracking
+- ⚡ **Real-time Progress**: Live updates during scraping and parsing operations
 
 ## Tech Stack
 
@@ -18,60 +19,132 @@ A full-stack TypeScript application that automatically scrapes, parses, and comp
 
 - React 18 + TypeScript
 - Vite (build tool)
-- Mantine UI (component library)
-- React Query (data fetching)
+- Mantine v7 UI (component library)
+- TanStack React Query v5 (data fetching & state management)
 - Recharts (data visualization)
+- Axios (HTTP client)
 
 ### Backend
 
 - Express.js + TypeScript
+- Puppeteer (web scraping & browser automation)
 - pdf-parse (PDF text extraction)
-- OpenAI GPT-4o-mini (AI-powered financial data extraction)
+- OpenAI GPT-4o (AI-powered financial data extraction)
 - File system management for data pipeline
+- Comprehensive API error handling
 
-## Financial Parser
+## How It Works
 
-The backend includes an AI-powered financial statement parser that:
+### Web Scraping Engine
 
-- **Extracts** text from annual report PDFs
-- **Analyzes** financial statements using OpenAI GPT-4o-mini
-- **Normalizes** data into structured JSON (Income Statement, Balance Sheet, Cash Flow)
-- **Processes** multiple years and handles data deduplication
+The application uses Puppeteer to intelligently scrape company investor relations pages:
+
+- **Smart PDF Detection**: Automatically identifies annual reports vs. other documents (sustainability, quarterly, etc.)
+- **Multi-Strategy Scraping**: Handles various website architectures including iframe-embedded content
+- **Annual Report Filtering**: Uses sophisticated text analysis to filter out non-annual reports
+- **Year Extraction**: Automatically extracts report years from filenames and content
+- **Robust Downloads**: Handles redirects, various PDF hosting services, and download authentication
+
+### AI-Powered Financial Parser
+
+The backend includes a sophisticated AI-powered financial statement parser that:
+
+- **Text Extraction**: Converts PDF documents to searchable text using pdf-parse
+- **Intelligent Analysis**: Uses OpenAI GPT-4o to identify and extract financial statement sections
+- **Data Normalization**: Converts various financial reporting formats into standardized JSON structures
+- **Multi-Year Processing**: Handles data from multiple years with deduplication and consistency checks
+- **Quality Validation**: Validates extracted data for completeness and accuracy
+
+### Financial Statement Types Supported
+
+The system extracts and normalizes the following statement types:
+
+**Income Statement**: Revenue, Net Sales, Cost of Sales, Gross Profit, Operating Expenses, R&D, Operating Income, Interest Income/Expense, Income Before Tax, Tax Expense, Net Income, Earnings Per Share
+
+**Balance Sheet**: Total Assets, Current/Non-current Assets, Cash and Cash Equivalents, Trade Receivables, Inventory, PPE, Intangible Assets, Goodwill, Total Liabilities, Current/Non-current Liabilities, Debt, Total Equity, Share Capital, Retained Earnings
+
+**Cash Flow Statement**: Operating Cash Flow, Investing Cash Flow, Financing Cash Flow, Net Change in Cash, with detailed breakdowns including depreciation, working capital changes, capex, acquisitions, debt issuance, dividends, and share repurchases
+
+### Data Processing Pipeline
+
+1. **PDF Text Extraction**: Extracts up to 100,000 characters per PDF for analysis
+2. **AI Processing**: Uses structured prompts with financial terminology mapping to identify statement sections
+3. **Data Normalization**: Converts various financial reporting formats into standardized JSON structures with consistent line item names
+4. **Data Validation**: Ensures extracted values are properly formatted and reasonable
+5. **Multi-Year Consolidation**: Merges data across years with conflict resolution and validation
+6. **Individual Year Storage**: Saves parsed data for each year in separate JSON files
+7. **Compiled Output**: Creates final consolidated multi-year financial statements
 
 ### API Endpoints
 
-- `POST /api/parse` - Parse financial statements for a company
-- `GET /api/parse/status` - Check parsing status
-- `GET /api/parse/companies` - List available companies
+#### Download Service
 
-### Data Pipeline
+- `POST /api/download/annual_report` - Scrape and download annual reports from company IR website
+  - Body: `{ "ir_url": "https://company-investor-relations-url" }`
+  - Returns: Download summary with company name, file count, and years processed
+
+#### Parsing Service
+
+- `POST /api/parse` - Parse financial statements from downloaded PDFs using AI
+  - Body: `{ "company": "company-folder-name" }`
+  - Returns: Structured financial data with Income Statement, Balance Sheet, and Cash Flow
+- `GET /api/parse/status` - Check parsing service health and configuration
+- `GET /api/parse/companies` - List available, parsed, and compiled companies
+
+### Data Storage Structure
 
 ```
-annual_reports/[company]/     # Raw PDF files
-    ↓
-parsed_data/[company]/        # Individual year JSON files
-    ↓
-compiled_data/[company].json  # Consolidated multi-year data
+backend/storage/
+├── annual_reports/[company]/    # Raw downloaded PDF files organized by company
+├── parsed_data/[company]/       # AI-extracted JSON data from each PDF (by year)
+└── compiled_data/               # Consolidated multi-year financial data
+    └── [company].json          # Final normalized financial statements
 ```
+
+### Error Handling & Status Tracking
+
+- **Comprehensive Validation**: Input validation with helpful error messages
+- **AI Service Monitoring**: OpenAI API key validation and rate limit handling
+- **File System Checks**: Automatic directory creation and file existence validation
+- **Progress Tracking**: Real-time status updates during scraping and parsing
+- **Graceful Failures**: Detailed error responses with actionable suggestions
 
 ## Project Structure
 
 ```
 equity-report-ai/
-├── frontend/           # React + Vite frontend
+├── frontend/                   # React + Vite frontend
 │   ├── src/
-│   │   ├── components/ # Reusable UI components
-│   │   ├── pages/      # Page components
-│   │   ├── hooks/      # Custom React hooks
-│   │   ├── types/      # TypeScript interfaces
-│   │   └── utils/      # Utility functions
-├── backend/            # Express.js backend
+│   │   ├── components/         # Reusable UI components (CompanyCard, FinancialTable, ProgressTracker)
+│   │   ├── hooks/              # Custom React hooks (useApi.ts for API calls)
+│   │   ├── types/              # TypeScript interfaces and types
+│   │   ├── utils/              # Utility functions (api.ts for HTTP client)
+│   │   ├── App.tsx             # Main application component
+│   │   └── main.tsx            # Application entry point
+│   ├── index.html              # HTML template
+│   ├── package.json
+│   ├── postcss.config.cjs      # PostCSS configuration for Mantine
+│   ├── tsconfig.json           # TypeScript configuration
+│   ├── tsconfig.node.json      # Node TypeScript configuration
+│   └── vite.config.ts          # Vite configuration
+├── backend/                    # Express.js backend
 │   ├── src/
-│   │   ├── routes/     # API route handlers
-│   │   ├── services/   # Business logic
-│   │   ├── utils/      # Helper functions
-│   │   └── types/      # TypeScript interfaces
-└── shared/             # Shared types and utilities
+│   │   ├── routes/             # API route handlers
+│   │   │   ├── download.ts     # PDF download endpoints
+│   │   │   └── parse.ts        # Financial parsing endpoints
+│   │   ├── services/           # Business logic
+│   │   │   ├── parser.ts       # AI-powered PDF parsing logic
+│   │   │   └── reportProcessor.ts # Web scraping and download logic
+│   │   ├── types/              # TypeScript interfaces (financial.ts)
+│   │   ├── tests/              # Test scripts for debugging
+│   │   └── index.ts            # Server entry point
+│   ├── storage/                # Data storage directories
+│   │   ├── annual_reports/     # Downloaded PDF files by company
+│   │   ├── parsed_data/        # Individual year JSON extracts
+│   │   └── compiled_data/      # Consolidated financial data
+│   ├── package.json
+│   └── tsconfig.json           # TypeScript configuration
+└── README.md                   # Project documentation
 ```
 
 ## Quick Start
@@ -79,11 +152,11 @@ equity-report-ai/
 ### Prerequisites
 
 - Node.js 18+ and npm
-- OpenAI API key
+- OpenAI API key (for AI-powered financial data extraction)
 
 ### 1. Environment Setup
 
-Create `.env` files:
+Create `.env` files in the appropriate directories:
 
 **Backend (.env):**
 
@@ -95,15 +168,12 @@ OPENAI_API_KEY=your_openai_api_key_here
 **Frontend (.env):**
 
 ```env
-VITE_API_URL=http://localhost:3001
+VITE_API_URL=http://localhost:5050
 ```
 
 ### 2. Installation
 
 ```bash
-# Install root dependencies
-npm install
-
 # Install backend dependencies
 cd backend && npm install
 
@@ -113,53 +183,110 @@ cd ../frontend && npm install
 
 ### 3. Development
 
-```bash
-# Run both frontend and backend concurrently
-npm run dev
+Start the development servers:
 
-# Or run individually:
-npm run dev:backend  # Backend on http://localhost:3001
-npm run dev:frontend # Frontend on http://localhost:5173
+```bash
+# Backend only
+cd backend && npm run dev
+# Backend runs on http://localhost:5050
+
+# Frontend only (in a new terminal)
+cd frontend && npm run dev
+# Frontend runs on http://localhost:5173
+```
+
+For debugging and testing:
+
+```bash
+# Test the financial parser on a specific company
+cd backend && npm run test:parser -- company-name
+
+# Test parsing a single PDF file
+cd backend && npm run test:single-pdf -- storage/annual_reports/company/report.pdf 2023
+
+# Check parser service status
+curl http://localhost:5050/api/parse/status
 ```
 
 ### 4. Production Build
 
 ```bash
-npm run build
+# Build frontend
+cd frontend && npm run build
+
+# Build backend
+cd backend && npm run build
 ```
 
 ## API Endpoints
 
-- `POST /api/download/annual_report` - Download annual reports from company IR website
+### Download Service
+
+- `POST /api/download/annual_report` - Scrape and download annual reports from company IR website
+  - Body: `{ "ir_url": "https://company-investor-relations-url" }`
+  - Returns: Download summary with company name, file count, and years processed
+
+### Parsing Service
+
 - `POST /api/parse` - Parse financial statements from downloaded PDFs using AI
-- `GET /api/parse/status` - Check parser service status
-- `GET /api/parse/companies` - List companies available for parsing
+  - Body: `{ "company": "company-folder-name" }`
+  - Returns: Structured financial data with Income Statement, Balance Sheet, and Cash Flow
+- `GET /api/parse/status` - Check parsing service health and configuration
+- `GET /api/parse/companies` - List available, parsed, and compiled companies
 
 ## Usage
 
-1. **Select Company**: Choose from pre-configured companies
-2. **Scrape Reports**: Automatically download annual reports from IR websites
-3. **Parse Data**: AI extracts and classifies financial statement sections
-4. **View Results**: Browse consolidated 10-year financial statements
-5. **Export Data**: Download results as CSV or Excel files
+1. **Download Reports**: Provide a company's investor relations URL to automatically scrape and download annual report PDFs
+2. **Parse Financials**: Use AI to extract structured financial data from downloaded PDFs
+3. **View Consolidated Data**: Browse multi-year financial statements with normalized line items
+4. **Export Data**: Download processed financial data in JSON format
+
+### Example API Usage
+
+```bash
+# 1. Download annual reports for a company
+curl -X POST http://localhost:5050/api/download/annual_report \
+  -H "Content-Type: application/json" \
+  -d '{"ir_url": "https://company-ir-website.com"}'
+
+# 2. Parse the downloaded PDFs
+curl -X POST http://localhost:5050/api/parse \
+  -H "Content-Type: application/json" \
+  -d '{"company": "company-folder-name"}'
+
+# 3. Check available companies
+curl http://localhost:5050/api/parse/companies
+
+# 4. Check service status
+curl http://localhost:5050/api/parse/status
+```
 
 ## Deployment
 
-### Frontend (Cloudflare)
-
-```bash
-cd frontend
-npm run build
-# Deploy to Cloudflare
-```
-
-### Backend (Render)
+### Backend (Production)
 
 ```bash
 cd backend
 npm run build
-# Deploy to Render with environment variables
+npm start
 ```
+
+Set the following environment variables:
+
+- `PORT` - Server port (default: 5050)
+- `OPENAI_API_KEY` - Your OpenAI API key
+
+### Frontend (Production)
+
+```bash
+cd frontend
+npm run build
+npm run preview
+```
+
+Set the following environment variable:
+
+- `VITE_API_URL` - Backend API URL (e.g., https://your-backend.com)
 
 ## Contributing
 

@@ -12,16 +12,13 @@ node_modules/
 .env.staging
 
 # Downloaded annual reports - exclude all contents but keep the directory structure
-backend/annual_reports/*/
-!backend/annual_reports/.gitkeep
+backend/storage/annual_reports/*/
 
 # Parsed data - exclude all AI-extracted raw JSON files
-backend/parsed_data/*/
-!backend/parsed_data/.gitkeep
+backend/storage/parsed_data/*/
 
 # Compiled data - exclude consolidated financial data
-backend/compiled_data/*.json
-!backend/compiled_data/.gitkeep
+backend/storage/compiled_data/*.json
 
 # Debug files and outputs
 backend/src/debug/

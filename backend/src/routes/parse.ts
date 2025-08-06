@@ -123,7 +123,7 @@ router.get("/status", (req, res) => {
     service: "Financial Statement Parser",
     status: hasOpenAIKey ? "ready" : "misconfigured",
     ai_provider: "OpenAI",
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     requirements: {
       openai_api_key: hasOpenAIKey ? "configured" : "missing",
     },
@@ -145,9 +145,9 @@ router.get("/companies", (req, res) => {
     const fs = require("fs");
     const path = require("path");
 
-    const reportsDir = path.join(__dirname, "../../annual_reports");
-    const parsedDataDir = path.join(__dirname, "../../parsed_data");
-    const compiledDataDir = path.join(__dirname, "../../compiled_data");
+    const reportsDir = path.join(__dirname, "../../storage/annual_reports");
+    const parsedDataDir = path.join(__dirname, "../../storage/parsed_data");
+    const compiledDataDir = path.join(__dirname, "../../storage/compiled_data");
 
     let availableCompanies: string[] = [];
     let parsedCompanies: string[] = [];

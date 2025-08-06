@@ -143,7 +143,7 @@ export async function parsePDFWithAI(
 
     console.log(`🤖 Sending to OpenAI for analysis...`);
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Using mini for cost efficiency, can be changed to gpt-4o
+      model: "gpt-4o", // Using for cost efficiency, can be changed to gpt-4o
       messages: [
         {
           role: "system",
@@ -156,7 +156,7 @@ export async function parsePDFWithAI(
         },
       ],
       temperature: 0.1, // Low temperature for consistent parsing
-      max_tokens: 2000,
+      max_tokens: 1000000,
     });
 
     const aiResponse = response.choices[0]?.message?.content;
@@ -259,9 +259,17 @@ export async function parseFinancialStatements(
 ): Promise<ParsedFinancialStatements> {
   console.log(`🏢 Starting financial statement parsing for: ${companyCode}`);
 
-  const reportsDir = path.join(__dirname, "../../annual_reports", companyCode);
-  const parsedDataDir = path.join(__dirname, "../../parsed_data", companyCode);
-  const compiledDataDir = path.join(__dirname, "../../compiled_data");
+  const reportsDir = path.join(
+    __dirname,
+    "../../storage/annual_reports",
+    companyCode
+  );
+  const parsedDataDir = path.join(
+    __dirname,
+    "../../storage/parsed_data",
+    companyCode
+  );
+  const compiledDataDir = path.join(__dirname, "../../storage/compiled_data");
 
   // Check if reports directory exists
   if (!fs.existsSync(reportsDir)) {
@@ -317,7 +325,7 @@ export async function parseFinancialStatements(
         balance_sheet: result.balance_sheet,
         cash_flow: result.cash_flow,
         ai_provider: "OpenAI",
-        model_used: "gpt-4o-mini",
+        model_used: "gpt-4o",
       };
       fs.writeFileSync(yearDataPath, JSON.stringify(yearData, null, 2));
       console.log(`💾 Saved ${year} data to: ${yearDataPath}`);
@@ -345,7 +353,7 @@ export async function parseFinancialStatements(
       total_files: parseResults.length,
       years_covered: years,
       ai_provider: "OpenAI",
-      model_used: "gpt-4o-mini",
+      model_used: "gpt-4o",
     },
   };
 
@@ -380,7 +388,7 @@ export class OpenAIProvider implements AIProvider {
     const prompt = createExtractionPrompt(text, year);
 
     const response = await this.client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -393,13 +401,9 @@ export class OpenAIProvider implements AIProvider {
         },
       ],
       temperature: 0.1,
-      max_tokens: 2000,
+      max_tokens: 1000000,
     });
 
     return response.choices[0]?.message?.content;
   }
 }
-
-// Future providers can be added here:
-// export class ClaudeProvider implements AIProvider { ... }
-// export class GeminiProvider implements AIProvider { ... }
