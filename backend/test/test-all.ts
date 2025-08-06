@@ -115,6 +115,26 @@ async function testParse(company: (typeof COMPANIES)[0]): Promise<void> {
   );
 }
 
+async function testCSV(company: (typeof COMPANIES)[0]): Promise<void> {
+  // Test CSV download
+  const response = await axios.get(
+    `${API_BASE_URL}/api/csv/download/${company.code}`,
+    { responseType: 'text', timeout: 30000 }
+  );
+
+  if (!response.data || response.data.length === 0) {
+    throw new Error(`CSV download failed: Empty response`);
+  }
+
+  const lines = response.data.split('\n');
+  if (lines.length < 2) {
+    throw new Error(`CSV format invalid: Less than 2 lines`);
+  }
+
+  console.log(`   Generated CSV with ${lines.length} lines`);
+  console.log(`   Headers: ${lines[0].substring(0, 50)}...`);
+}
+
 async function runAllTests() {
   console.log("🧪 Running Comprehensive API Tests");
   console.log("=".repeat(80));
@@ -213,6 +233,45 @@ async function runAllTests() {
     }
   }
 
+  console.log("\n📊 PHASE 3: Testing CSV Export Endpoints");
+  console.log("=".repeat(50));
+
+  // Test CSV endpoints
+  for (const company of COMPANIES) {
+    const startTime = Date.now();
+    try {
+      console.log(`\n🔄 Testing ${company.name} CSV export...`);
+      await testCSV(company);
+      const duration = Date.now() - startTime;
+      results.push({
+        endpoint: "csv",
+        company: company.name,
+        success: true,
+        duration,
+      });
+      totalPassed++;
+      console.log(
+        `✅ ${company.name} CSV test passed (${Math.round(duration / 1000)}s)`
+      );
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      results.push({
+        endpoint: "csv",
+        company: company.name,
+        success: false,
+        duration,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      totalFailed++;
+      console.log(
+        `❌ ${company.name} CSV test failed (${Math.round(duration / 1000)}s)`
+      );
+      console.log(
+        `   Error: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
   // Print summary
   console.log("\n" + "=".repeat(80));
   console.log("📊 TEST RESULTS SUMMARY");
@@ -257,6 +316,29 @@ async function runAllTests() {
     console.log(
       `   Compiled companies: ${companiesResponse.data.total_compiled}`
     );
+
+    // Test CSV companies endpoint
+    const csvCompaniesResponse = await axios.get(`${API_BASE_URL}/api/csv/companies`);
+    console.log("✅ CSV companies listing endpoint working");
+    console.log(`   CSV-available companies: ${csvCompaniesResponse.data.total}`);
+
+    // Test CSV comparative endpoint if multiple companies available
+    if (csvCompaniesResponse.data.companies.length >= 2) {
+      const testCompanies = csvCompaniesResponse.data.companies.slice(0, 2);
+      const compareResponse = await axios.post(
+        `${API_BASE_URL}/api/csv/compare`,
+        { companies: testCompanies },
+        { 
+          responseType: 'text',
+          headers: { "Content-Type": "application/json" },
+          timeout: 30000
+        }
+      );
+      if (compareResponse.data && compareResponse.data.length > 0) {
+        console.log(`✅ CSV comparative export working (${testCompanies.join(", ")})`);
+      }
+    }
+
   } catch (error) {
     console.log("⚠️  Some status endpoints may not be working");
   }

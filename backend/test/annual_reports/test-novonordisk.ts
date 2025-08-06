@@ -2,7 +2,7 @@
 
 /**
  * Test script for downloading Novo Nordisk annual reports
- * Usage: npm run test:download:novonordisk
+ * Usage: npm run test:annual_reports:novonordisk
  */
 
 import axios from "axios";

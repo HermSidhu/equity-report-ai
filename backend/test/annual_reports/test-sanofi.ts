@@ -2,7 +2,7 @@
 
 /**
  * Test script for downloading Sanofi annual reports
- * Usage: npm run test:download:sanofi
+ * Usage: npm run test:annual_reports:sanofi
  */
 
 import axios from "axios";

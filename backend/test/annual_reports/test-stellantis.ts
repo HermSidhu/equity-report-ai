@@ -2,7 +2,7 @@
 
 /**
  * Test script for downloading Stellantis annual reports
- * Usage: npm run test:download:stellantis
+ * Usage: npm run test:annual_reports:stellantis
  */
 
 import axios from "axios";

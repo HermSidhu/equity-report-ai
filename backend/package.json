@@ -9,9 +9,10 @@
     "debug:parser": "ts-node src/debug/debug-parser.ts",
     "debug:pdf": "ts-node src/debug/debug-pdf.ts",
     "test:all": "ts-node test/test-all.ts",
-    "test:download:novonordisk": "ts-node test/download/test-novonordisk.ts",
-    "test:download:stellantis": "ts-node test/download/test-stellantis.ts",
-    "test:download:sanofi": "ts-node test/download/test-sanofi.ts",
+    "test:csv": "ts-node test/csv/test-csv.ts",
+    "test:annual_reports:novonordisk": "ts-node test/annual_reports/test-novonordisk.ts",
+    "test:annual_reports:stellantis": "ts-node test/annual_reports/test-stellantis.ts",
+    "test:annual_reports:sanofi": "ts-node test/annual_reports/test-sanofi.ts",
     "test:parse:novonordisk": "ts-node test/parse/test-novonordisk.ts",
     "test:parse:stellantis": "ts-node test/parse/test-stellantis.ts",
     "test:parse:sanofi": "ts-node test/parse/test-sanofi.ts"
