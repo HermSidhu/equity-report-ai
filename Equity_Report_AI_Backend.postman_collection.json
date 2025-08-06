@@ -1,0 +1,681 @@
+{
+  "info": {
+    "_postman_id": "f8b0c8e5-d4a2-4c8f-9b2e-3f5a8c9d7e1b",
+    "name": "Equity Report AI - Backend API",
+    "description": "Complete API collection for the Equity Report AI backend service that automatically scrapes, parses, and compiles companies' annual reports into clean, consolidated financial statements.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345678"
+  },
+  "item": [
+    {
+      "name": "Annual Reports",
+      "description": "Endpoints for downloading and managing annual report PDFs",
+      "item": [
+        {
+          "name": "Download Annual Reports",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"novonordisk\",\n  \"irUrl\": \"https://www.novonordisk.com/sustainable-business/esg-portal/integrated-reporting.html\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/annual_reports",
+              "host": ["{{base_url}}"],
+              "path": ["api", "annual_reports"]
+            },
+            "description": "Scrapes and downloads annual reports for the last 10 years from a company's investor relations website. Uses Puppeteer to intelligently identify and download PDF reports."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"companyName\": \"novonordisk\",\n  \"irUrl\": \"https://www.novonordisk.com/sustainable-business/esg-portal/integrated-reporting.html\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/annual_reports",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "annual_reports"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Annual reports downloaded successfully\",\n  \"companyName\": \"novonordisk\",\n  \"totalFiles\": 10,\n  \"years\": [2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014],\n  \"downloadedFiles\": [\n    {\n      \"filename\": \"annual-report-2023.pdf\",\n      \"year\": 2023,\n      \"size\": 5242880\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Downloaded Files",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/annual_reports/:companyId/files",
+              "host": ["{{base_url}}"],
+              "path": ["api", "annual_reports", ":companyId", "files"],
+              "variable": [
+                {
+                  "key": "companyId",
+                  "value": "novonordisk",
+                  "description": "Company identifier (e.g., novonordisk, stellantis, sanofi)"
+                }
+              ]
+            },
+            "description": "Lists all downloaded PDF files for a specific company, including file size, download date, and extracted year information."
+          },
+          "response": [
+            {
+              "name": "Files Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/annual_reports/novonordisk/files",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "annual_reports", "novonordisk", "files"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"companyId\": \"novonordisk\",\n  \"files\": [\n    {\n      \"filename\": \"annual-report-2023.pdf\",\n      \"path\": \"backend/storage/annual_reports/novonordisk/annual-report-2023.pdf\",\n      \"year\": 2023,\n      \"size\": 5242880,\n      \"downloadedAt\": \"2024-01-15T10:30:00.000Z\"\n    }\n  ],\n  \"totalFiles\": 1\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parsing & AI",
+      "description": "Endpoints for AI-powered financial statement parsing from PDFs",
+      "item": [
+        {
+          "name": "Parse Financial Statements",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"novonordisk\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/parse",
+              "host": ["{{base_url}}"],
+              "path": ["api", "parse"]
+            },
+            "description": "Uses OpenAI GPT-4o to extract and normalize financial data from downloaded PDF reports. Processes Income Statement, Balance Sheet, and Cash Flow statements for multiple years."
+          },
+          "response": [
+            {
+              "name": "Parse Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"company\": \"novonordisk\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/parse",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "parse"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Financial statements parsed successfully\",\n  \"data\": {\n    \"companyName\": \"novonordisk\",\n    \"totalPDFs\": 10,\n    \"successfullyParsed\": 8,\n    \"years\": [2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016],\n    \"statements\": {\n      \"income_statement\": {\n        \"2023\": {\n          \"Net Sales\": \"139,285\",\n          \"Cost of Sales\": \"41,936\",\n          \"Gross Profit\": \"97,349\"\n        }\n      },\n      \"balance_sheet\": {\n        \"2023\": {\n          \"Total Assets\": \"191,427\",\n          \"Total Liabilities\": \"78,945\",\n          \"Total Equity\": \"112,482\"\n        }\n      },\n      \"cash_flow\": {\n        \"2023\": {\n          \"Operating Cash Flow\": \"42,589\",\n          \"Investing Cash Flow\": \"-8,245\",\n          \"Financing Cash Flow\": \"-31,847\"\n        }\n      }\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Parse Specific Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/parse/:companyId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "parse", ":companyId"],
+              "variable": [
+                {
+                  "key": "companyId",
+                  "value": "novonordisk",
+                  "description": "Company identifier to parse"
+                }
+              ]
+            },
+            "description": "Alternative endpoint to parse financial statements for a specific company using URL parameter instead of request body."
+          }
+        },
+        {
+          "name": "Get Parser Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/parse/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "parse", "status"]
+            },
+            "description": "Checks the health and configuration of the parsing service, including OpenAI API key validation and service availability."
+          },
+          "response": [
+            {
+              "name": "Service Healthy",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/parse/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "parse", "status"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"healthy\",\n  \"service\": \"Financial Statement Parser\",\n  \"version\": \"1.0.0\",\n  \"ai_provider\": \"OpenAI GPT-4o\",\n  \"features\": {\n    \"pdf_parsing\": true,\n    \"ai_extraction\": true,\n    \"multi_year_processing\": true,\n    \"statement_types\": [\"income_statement\", \"balance_sheet\", \"cash_flow\"]\n  },\n  \"limits\": {\n    \"max_pdf_size\": \"50MB\",\n    \"max_text_length\": 100000,\n    \"supported_years\": 10\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Available Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/parse/companies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "parse", "companies"]
+            },
+            "description": "Returns a list of all companies with their processing status: available (PDFs downloaded), parsed (data extracted), and compiled (consolidated data ready)."
+          },
+          "response": [
+            {
+              "name": "Companies List",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/parse/companies",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "parse", "companies"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"available\": [\"novonordisk\", \"stellantis\", \"sanofi\"],\n  \"parsed\": [\"novonordisk\", \"stellantis\"],\n  \"compiled\": [\"novonordisk\"],\n  \"summary\": {\n    \"total_available\": 3,\n    \"total_parsed\": 2,\n    \"total_compiled\": 1\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compiled Data",
+      "description": "Endpoints for accessing consolidated multi-year financial data",
+      "item": [
+        {
+          "name": "Get Compiled Data for Company",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/compiled_data/:companyId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "compiled_data", ":companyId"],
+              "variable": [
+                {
+                  "key": "companyId",
+                  "value": "novonordisk",
+                  "description": "Company identifier (e.g., novonordisk, stellantis, sanofi)"
+                }
+              ]
+            },
+            "description": "Retrieves consolidated financial data for a specific company in JSON format. This data is structured for easy consumption by frontend applications and includes normalized financial statements across multiple years."
+          },
+          "response": [
+            {
+              "name": "Compiled Data Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/compiled_data/novonordisk",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "compiled_data", "novonordisk"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"metadata\": {\n      \"company_name\": \"Novo Nordisk A/S\",\n      \"compilation_date\": \"2024-01-15T14:30:00Z\",\n      \"years_covered\": [\"2023\", \"2022\", \"2021\", \"2020\", \"2019\"],\n      \"currency\": \"DKK millions\",\n      \"fiscal_year_end\": \"December 31\"\n    },\n    \"statements\": {\n      \"income_statement\": {\n        \"2023\": {\n          \"Net Sales\": \"139,285\",\n          \"Cost of Sales\": \"41,936\",\n          \"Gross Profit\": \"97,349\",\n          \"Operating Income\": \"61,438\",\n          \"Net Income\": \"55,097\"\n        },\n        \"2022\": {\n          \"Net Sales\": \"140,802\",\n          \"Cost of Sales\": \"43,909\",\n          \"Gross Profit\": \"96,893\"\n        }\n      },\n      \"balance_sheet\": {\n        \"2023\": {\n          \"Total Assets\": \"191,427\",\n          \"Current Assets\": \"89,245\",\n          \"Total Liabilities\": \"78,945\",\n          \"Total Equity\": \"112,482\"\n        }\n      },\n      \"cash_flow\": {\n        \"2023\": {\n          \"Operating Cash Flow\": \"42,589\",\n          \"Investing Cash Flow\": \"-8,245\",\n          \"Financing Cash Flow\": \"-31,847\",\n          \"Net Change in Cash\": \"2,497\"\n        }\n      }\n    }\n  },\n  \"message\": \"Compiled financial data for novonordisk\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List All Compiled Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/compiled_data",
+              "host": ["{{base_url}}"],
+              "path": ["api", "compiled_data"]
+            },
+            "description": "Lists all companies that have compiled financial data available, along with metadata about each company's data coverage."
+          },
+          "response": [
+            {
+              "name": "Compiled Companies List",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/compiled_data",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "compiled_data"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"companies\": [\n    {\n      \"id\": \"novonordisk\",\n      \"name\": \"Novo Nordisk A/S\",\n      \"years_covered\": [\"2023\", \"2022\", \"2021\", \"2020\", \"2019\"],\n      \"last_updated\": \"2024-01-15T14:30:00Z\",\n      \"file_size\": 125870\n    },\n    {\n      \"id\": \"stellantis\",\n      \"name\": \"Stellantis N.V.\",\n      \"years_covered\": [\"2023\", \"2022\", \"2021\"],\n      \"last_updated\": \"2024-01-14T09:15:00Z\",\n      \"file_size\": 98450\n    }\n  ],\n  \"total\": 2,\n  \"message\": \"Available compiled financial data\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CSV Export",
+      "description": "Endpoints for exporting financial data in CSV format",
+      "item": [
+        {
+          "name": "List Companies Available for CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/csv/companies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "csv", "companies"]
+            },
+            "description": "Returns a list of all companies that have compiled financial data available for CSV export."
+          },
+          "response": [
+            {
+              "name": "Available Companies",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/csv/companies",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "csv", "companies"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"companies\": [\"novonordisk\", \"stellantis\", \"sanofi\"],\n  \"total\": 3,\n  \"message\": \"Available companies for CSV export\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Download Company CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/csv/download/:company",
+              "host": ["{{base_url}}"],
+              "path": ["api", "csv", "download", ":company"],
+              "variable": [
+                {
+                  "key": "company",
+                  "value": "novonordisk",
+                  "description": "Company identifier for CSV export"
+                }
+              ]
+            },
+            "description": "Downloads a CSV file containing all financial data for a specific company. The file includes Income Statement, Balance Sheet, and Cash Flow data across all available years."
+          },
+          "response": [
+            {
+              "name": "CSV Download",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/csv/download/novonordisk",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "csv", "download", "novonordisk"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/csv"
+                },
+                {
+                  "key": "Content-Disposition",
+                  "value": "attachment; filename=\\\"novonordisk_financial_data.csv\\\"\""
+                }
+              ],
+              "cookie": [],
+              "body": "Statement Type,Metric,2023,2022,2021,2020,2019\\nIncome Statement,Net Sales,139285,140802,126925,122016,117781\\nIncome Statement,Cost of Sales,41936,43909,40284,34421,30326\\nIncome Statement,Gross Profit,97349,96893,86641,87595,87455\\nBalance Sheet,Total Assets,191427,188294,175389,166582,152763\\nCash Flow,Operating Cash Flow,42589,48567,51287,49203,46438"
+            }
+          ]
+        },
+        {
+          "name": "Preview Company CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/csv/preview/:company?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "csv", "preview", ":company"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Number of rows to preview (default: 50)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "company",
+                  "value": "novonordisk",
+                  "description": "Company identifier to preview"
+                }
+              ]
+            },
+            "description": "Returns a JSON preview of the CSV structure without downloading the file. Useful for understanding data format before download."
+          },
+          "response": [
+            {
+              "name": "CSV Preview",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/csv/preview/novonordisk?limit=10",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "csv", "preview", "novonordisk"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"preview\": [\n    {\n      \"Statement Type\": \"Income Statement\",\n      \"Metric\": \"Net Sales\",\n      \"2023\": \"139,285\",\n      \"2022\": \"140,802\",\n      \"2021\": \"126,925\"\n    },\n    {\n      \"Statement Type\": \"Income Statement\",\n      \"Metric\": \"Cost of Sales\",\n      \"2023\": \"41,936\",\n      \"2022\": \"43,909\",\n      \"2021\": \"40,284\"\n    }\n  ],\n  \"total_rows\": 45,\n  \"showing\": 10,\n  \"company\": \"novonordisk\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Compare Multiple Companies CSV",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companies\": [\"novonordisk\", \"stellantis\", \"sanofi\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/csv/compare",
+              "host": ["{{base_url}}"],
+              "path": ["api", "csv", "compare"]
+            },
+            "description": "Generates a comparative CSV file containing financial data for multiple companies side-by-side. Useful for financial analysis and benchmarking."
+          },
+          "response": [
+            {
+              "name": "Comparative CSV",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"companies\": [\"novonordisk\", \"stellantis\"]\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/csv/compare",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "csv", "compare"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/csv"
+                },
+                {
+                  "key": "Content-Disposition",
+                  "value": "attachment; filename=\\\"financial_comparison_novonordisk_stellantis.csv\\\"\""
+                }
+              ],
+              "cookie": [],
+              "body": "Statement Type,Metric,Year,novonordisk,stellantis\\nIncome Statement,Net Sales,2023,139285,189533\\nIncome Statement,Net Sales,2022,140802,175180\\nIncome Statement,Cost of Sales,2023,41936,153421\\nBalance Sheet,Total Assets,2023,191427,147289"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "description": "Basic health check endpoint",
+      "item": [
+        {
+          "name": "Server Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Basic health check to verify the server is running and responsive."
+          },
+          "response": [
+            {
+              "name": "Server Running",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/",
+                  "host": ["{{base_url}}"],
+                  "path": [""]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Equity Report AI Backend Server is running\",\n  \"status\": \"healthy\",\n  \"timestamp\": \"2024-01-15T14:30:00Z\",\n  \"version\": \"1.0.0\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set default base URL if not already set",
+          "if (!pm.collectionVariables.get('base_url')) {",
+          "    pm.collectionVariables.set('base_url', 'http://localhost:5050');",
+          "}",
+          "",
+          "// Log the request for debugging",
+          "console.log('Making request to:', pm.collectionVariables.get('base_url'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Basic response validation",
+          "pm.test('Response time is reasonable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(30000);",
+          "});",
+          "",
+          "// Check for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('Status code is successful', function () {",
+          "        pm.response.to.have.status.code.that.is.oneOf([200, 201, 202]);",
+          "    });",
+          "}",
+          "",
+          "// Log response for debugging",
+          "console.log('Response status:', pm.response.code);",
+          "console.log('Response time:', pm.response.responseTime + 'ms');"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5050",
+      "description": "Backend API base URL - change to production URL when needed"
+    },
+    {
+      "key": "openai_api_key",
+      "value": "",
+      "description": "OpenAI API key for AI parsing (set in environment if needed)"
+    }
+  ]
+}
