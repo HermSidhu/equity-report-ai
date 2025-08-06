@@ -347,7 +347,7 @@ function MainApp() {
     }
   };
 
-  // Effect to fetch files when company is selected
+  // Effect to fetch files when a company is selected
   useEffect(() => {
     if (selectedCompany) {
       fetchDownloadedFiles(selectedCompany.id);
