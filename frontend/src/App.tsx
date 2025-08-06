@@ -328,7 +328,8 @@ function MainApp() {
   // Function to fetch downloaded files for a company
   const fetchDownloadedFiles = async (companyId: string) => {
     try {
-      const response = await fetch(`/api/annual_reports/${companyId}/files`);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
+      const response = await fetch(`${API_BASE_URL}/api/annual_reports/${companyId}/files`);
       if (!response.ok) {
         throw new Error(`Failed to fetch files: ${response.statusText}`);
       }
@@ -379,7 +380,8 @@ function MainApp() {
         },
       }));
 
-      const downloadResponse = await fetch("/api/annual_reports", {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
+      const downloadResponse = await fetch(`${API_BASE_URL}/api/annual_reports`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -438,7 +440,7 @@ function MainApp() {
         },
       }));
 
-      const parseResponse = await fetch(`/api/parse/${company.id}`, {
+      const parseResponse = await fetch(`${API_BASE_URL}/api/parse/${company.id}`, {
         method: "POST",
       });
 
